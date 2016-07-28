@@ -60,3 +60,4 @@ consulta *con;
 
 int menu();
 void save_file_info();
+void show_info();
