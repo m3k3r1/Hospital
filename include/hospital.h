@@ -15,14 +15,16 @@ struct horas
 };
 typedef struct horas horas;
 
+typedef struct medico medico;
 struct medico
 {
     char nome[50];
     char especialidade[50];
     horas entrada;
-    horas saida;    
+    horas saida;
+    medico *next;    
 };
-typedef struct medico medico;
+
 
 struct data
 {
@@ -40,13 +42,16 @@ struct consulta
 };
 typedef struct consulta consulta;
 
+typedef struct paciente paciente; 
 struct paciente
 {
     char nome[50];
     int idade;
     consulta x;
+    paciente *next;
 };
-typedef struct paciente paciente;  
+ 
 
 
 int menu();
+void save_file_info();
