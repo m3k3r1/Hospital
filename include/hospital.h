@@ -48,6 +48,7 @@ struct paciente
 {
     char nome[50];
     int idade;
+    int nconsultas;
     consulta consulta;
     paciente *next;
 };

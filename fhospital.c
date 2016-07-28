@@ -16,7 +16,7 @@ int menu()
 
 void save_file_info()
 {
-    int i = 1, x = 1, w = 1, n;
+    int i = 1, x = 1, w = 1;
 
     FILE *f = fopen("medico.txt", "r");
     FILE *y = fopen("paciente.txt", "r");
@@ -28,10 +28,6 @@ void save_file_info()
     med_current = malloc(sizeof(medico));
     pac_current = malloc(sizeof(paciente));
     con_current = malloc(sizeof(consulta));
-
-    med = med_current;
-    pac = pac_current;
-    con = con_current;
 
     if(f == NULL || y == NULL)
     {
@@ -55,12 +51,15 @@ void save_file_info()
         i++;
         med_current = realloc(med_current, sizeof(medico)* i);
     }
+    med = malloc(sizeof(med_current));
+    med = med_current;
+
     while(!feof(y))
     {
         fscanf(y, "%[^\n]", pac_current->nome);
         fscanf(y, "%d", &(pac_current->idade));
-        fscanf(y, "%d consultas", &n);
-        for(i = 0; i < n; i++)
+        fscanf(y, "%d consultas", &(pac->nconsultas));
+        for(i = 0; i < pac->nconsultas; i++)
         {
             fscanf(y, "%s--%d/%d/%d--%s", con_current->tipo, &(con_current->data.dia), 
                 &(con_current->data.mes), &(con_current->data.ano), con_current->medico);
@@ -70,6 +69,12 @@ void save_file_info()
         pac_current = realloc(pac_current, sizeof(paciente)* x);
         x++;
     }
+    con = malloc(sizeof(con_current));
+    con = con_current;
+
+    pac = malloc(sizeof(pac_current));
+    pac = pac_current;
+
 
     fclose(f);
     fclose(y);   
@@ -84,5 +89,18 @@ void show_info()
         printf( "Horário > %dh%dm - %dh%dm\n", med->entrada.h, med->entrada.m, 
             med->saida.h, med->saida.m);
         med = med->next;
+    }
+    while ( pac != NULL)
+    {
+        int i ;
+
+        printf ( "\n\nPaciente > %s\n", pac->nome);
+        printf ("Idade > %d\n", pac->idade);
+        printf ("Consultas:\n");
+        for(i = 0; i < pac->nconsultas; i++)
+        {
+            printf("\tTipo > %s", con->tipo);
+            printf("\tData > ");
+        }
     }
 }

@@ -1,5 +1,5 @@
 all:
-	gcc  main.c fhospital.c -Iinclude -o hospital 
+	gcc  -Wall main.c fhospital.c -Iinclude -o hospital 
 
 clean:
-	rm main
+	rm hospital
