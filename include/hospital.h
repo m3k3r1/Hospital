@@ -34,23 +34,27 @@ struct data
 };
 typedef struct data data;
 
+typedef struct consulta consulta;
 struct consulta
 {
     char tipo[50];
-    data x;
+    data data;
     char medico[50];
+    consulta *next;
 };
-typedef struct consulta consulta;
 
 typedef struct paciente paciente; 
 struct paciente
 {
     char nome[50];
     int idade;
-    consulta x;
+    consulta consulta;
     paciente *next;
 };
  
+medico *med;
+paciente *pac;
+consulta *con;
 
 
 int menu();
