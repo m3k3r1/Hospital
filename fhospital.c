@@ -110,6 +110,7 @@ void dump_pac()
 
 void show_info()
 {   
+    //FIX
     system(CLEAR);
     printf("\n\n\n\t\t::Medicos::\n\n");
     while(head_m != NULL)
