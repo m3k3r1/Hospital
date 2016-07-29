@@ -7,8 +7,7 @@ int main()
 	menu_op = menu();
 	switch(menu_op)
 	{
-    	case 1: save_file_info();
-				show_info();
+    	case 1: dump_database();
                 break;
         case 2: printf("Função\n");
                 break;

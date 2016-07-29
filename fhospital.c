@@ -14,93 +14,135 @@ int menu()
     return menu_op;
 }
 
-void save_file_info()
+void dump_database()
 {
-    int i = 1, x = 1, w = 1;
+    dump_med();
+    //dump_pac();
+    show_info();
+}
 
-    FILE *f = fopen("medico.txt", "r");
-    FILE *y = fopen("paciente.txt", "r");
+void dump_med()
+{
+    int i = 1;
+    FILE *f;
+    struct medico *new_med;
+    struct medico *temp_m;
 
-    medico *med_current = med;
-    paciente *pac_current = pac;
-    consulta *con_current = con;
-    
-    med_current = malloc(sizeof(medico));
-    pac_current = malloc(sizeof(paciente));
-    con_current = malloc(sizeof(consulta));
+    f = fopen(M_FILE, "r");
+    new_med = malloc(sizeof(struct medico));
+    temp_m = malloc(sizeof(struct medico));
 
-    if(f == NULL || y == NULL)
+    if(f == NULL)
     {
         printf("Erro a abrir o ficheiro\n");
         return;
     }
-    if(med_current == NULL || pac_current == NULL || con_current == NULL)
+
+    if( new_med == NULL || temp_m == NULL)
     {
         printf("Erro a alocar a memória\n");
         return;
     }
-
     while(!feof(f))
     {   
-        
-        fscanf(f, "%[^\n]", med_current->nome);
-        fscanf(f, "%s", med_current->especialidade);
-        fscanf(f, "%d.%d--%d.%d", &(med_current->entrada.h), &(med_current->entrada.m), 
-            &(med_current->saida.h), &(med_current->saida.m));
-        med_current = med_current->next;
-        i++;
-        med_current = realloc(med_current, sizeof(medico)* i);
-    }
-    med = malloc(sizeof(med_current));
-    med = med_current;
-
-    while(!feof(y))
-    {
-        fscanf(y, "%[^\n]", pac_current->nome);
-        fscanf(y, "%d", &(pac_current->idade));
-        fscanf(y, "%d consultas", &(pac->nconsultas));
-        for(i = 0; i < pac->nconsultas; i++)
+        new_med = realloc(new_med, sizeof(struct medico) * i);
+        if( new_med == NULL)
         {
-            fscanf(y, "%s--%d/%d/%d--%s", con_current->tipo, &(con_current->data.dia), 
-                &(con_current->data.mes), &(con_current->data.ano), con_current->medico);
-            w++;
-            con_current =realloc(con_current, sizeof(consulta)* w);
+            printf("Erro a realocar a memória\n");
+            return;
         }
-        pac_current = realloc(pac_current, sizeof(paciente)* x);
-        x++;
+        fscanf(f, "%[^\n]", new_med->nome);
+        fscanf(f, "%s", new_med->especialidade);
+        fscanf(f, "%d.%d--%d.%d\n", &(new_med->entrada.h), &(new_med->entrada.m),
+            &(new_med->saida.h), &(new_med->saida.m));
+        temp_m = new_med;
+        temp_m->next = head_m;
+        head_m = temp_m;
+        new_med = new_med->next;
+        i++;
     }
-    con = malloc(sizeof(con_current));
-    con = con_current;
-
-    pac = malloc(sizeof(pac_current));
-    pac = pac_current;
-
-
+    free(new_med);
+    free(temp_m);
     fclose(f);
-    fclose(y);   
+}
+
+void dump_pac()
+{
+    int i = 1, n;
+    struct paciente *new_pac;
+    struct paciente *temp_p;
+    struct consulta *new_con;
+    struct consulta *temp_c;
+    FILE *f;
+    head_c = NULL;
+    head_p = NULL;
+
+    f = fopen(P_FILE, "r");
+    new_pac = malloc(sizeof(struct paciente));
+    temp_p = malloc(sizeof(struct paciente));
+    new_con = malloc(sizeof(struct consulta));
+    temp_c = malloc(sizeof(struct consulta));
+
+    if(f == NULL)
+    {
+        printf("Erro a abrir o ficheiro\n");
+        return;
+    }
+    while(!feof(f))
+    {
+        new_pac = realloc(new_pac, sizeof(struct paciente) * i);
+        fscanf(f, "%[^\n]", new_pac->nome);
+        fscanf(f, "%d", &(new_pac->idade));
+        fscanf(f, "%d consultas", &(new_pac->nconsultas));
+        for(n = 0; n < new_pac->nconsultas; n++)
+        {
+            new_con =realloc(new_con, sizeof(struct consulta)* (n+1));
+            fscanf(f, "%s--%d/%d/%d--%[^\n]", new_con->tipo, &(new_con->data.dia), 
+                &(new_con->data.mes), &(new_con->data.ano), new_con->medico);
+            temp_c = new_con;
+            temp_c = head_c;
+            head_c = temp_c;
+            new_con = new_con->next;
+        }
+        temp_p = new_pac;
+        temp_p->next = head_p;
+        head_p = temp_p;
+        new_pac = new_pac->next;
+        i++;
+    }
+    free(new_pac);
+    free(new_con);
+    free(temp_p);
+    free(temp_c);
+    fclose(f);
 }
 
 void show_info()
 {
-    while( med != NULL)
+    while(head_m != NULL)
     {
-        printf( "\n\nMédico > %s\n", med->nome);
-        printf( "Especialidade > %s\n", med->especialidade);
-        printf( "Horário > %dh%dm - %dh%dm\n", med->entrada.h, med->entrada.m, 
-            med->saida.h, med->saida.m);
-        med = med->next;
+        printf( "\n\nMédico > %s\n", head_m->nome);
+        printf( "Especialidade > %s\n", head_m->especialidade);
+        printf( "Horário > %dh%dm - %dh%dm\n", head_m->entrada.h, head_m->entrada.m,
+            head_m->saida.h, head_m->saida.m);
+        head_m = head_m->next;
     }
-    while ( pac != NULL)
+   while (head_p != NULL)
     {
-        int i ;
+        int i;
 
-        printf ( "\n\nPaciente > %s\n", pac->nome);
-        printf ("Idade > %d\n", pac->idade);
-        printf ("Consultas:\n");
-        for(i = 0; i < pac->nconsultas; i++)
+        printf ( "\n\nPaciente > %s\n", head_p->nome);
+        printf ("Idade > %d\n", head_p->idade);
+        printf ("%d Consultas:\n", head_p->nconsultas);
+         for(i = 0; i < head_p->nconsultas; i++)
         {
-            printf("\tTipo > %s", con->tipo);
-            printf("\tData > ");
+            printf("\tTipo > %s", head_c->tipo);
+            printf("\tData > %d/%d/%d", (head_c->data.dia), 
+                (head_c->data.mes), (head_c->data.ano));
+            printf("\tMédico > %s", head_c->medico);
+            head_c = head_c->next;
+            i++;
         }
+        head_p = head_p->next;
     }
 }
