@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -10,6 +11,8 @@
 
 #define M_FILE "medico.txt"
 #define P_FILE "paciente.txt"
+#define TRUE 1
+#define FALSE 0
 
 struct horas 
 {
@@ -55,5 +58,6 @@ int menu();
 void dump_database();
 void dump_med();
 void dump_pac();
-void add_Node(struct medico *current);
 void show_info();
+void med_by_spec();
+void pac_by_spec();
