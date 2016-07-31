@@ -55,6 +55,18 @@ struct paciente
 };
 
 int menu();
+void clock_date();
+void show_all(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c);
+void search_med(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c);
+void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c);
+void pac_by_time(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c);
+void med_now(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c);
+void make_appointment();
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c);
 void dump_med(struct medico **head_m);

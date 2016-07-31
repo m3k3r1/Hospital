@@ -4,15 +4,63 @@ int menu()
 {
     int menu_op;
     system(CLEAR);
-    printf("\n\n\n1 - Listagem Completa de Medicos e Pacientes\n"
+    clock_date();
+    printf("\n1 - Listagem Completa de Medicos e Pacientes\n"
            "2 - Pesquisar médicos por especialidade\n"
            "3 - Listagem de paciente por especialidade\n"
-           "4 - Stuff\n"
-           "5 - Sair\n"
+           "4 - Listagem de paciente por período de tempo\n"
+           "5 - Médicos disponiveis\n"
+           "6 - Marcações\n"
+           "7 - Sair\n"
            "\nOpção >> ");
     scanf("\n%d", &menu_op);
     return menu_op;
 }
+
+void clock_date()
+{
+    time_t mytime;
+    mytime = time(NULL);
+    
+
+    printf("\n\t\t\t%s\n", ctime(&mytime));  
+}
+
+void show_all(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c)
+{
+    dump_database(&head_m, &head_p, &head_c);
+    show_info(head_m, head_p, head_c);
+}
+void search_med(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c)
+{
+    dump_database(&head_m, &head_p, &head_c);
+    med_by_spec(head_m);
+}
+void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c)
+{
+    dump_database(&head_m, &head_p, &head_c);
+    pac_by_spec(head_p, head_c);
+}
+void pac_by_time(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c)
+{
+
+}
+void med_now(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c)
+{
+
+}
+void make_appointment()
+{
+
+}
+
+
+
 
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c)
@@ -53,7 +101,7 @@ void dump_med(struct medico **head_m)
 void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 {
     struct paciente tmp;
-    struct consulta tmp_c;
+    //struct consulta tmp_c;
 
     FILE *f = fopen(P_FILE, "r");
         if(f == NULL)
@@ -66,20 +114,25 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
           fscanf(f, "%d", &tmp.idade) == 1 &&
           fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
     {
-        while(fscanf(f, "%s--%d/%d/%d--%[^\n]", tmp_c.tipo, 
-            &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 4 )
+        /**if(tmp.nconsultas > 0)
         {
-            printf("\tTipo de Consulta: %s\n", tmp_c.tipo);
-            if (!(*head_c = malloc(sizeof (**head_c))))
+            while(fscanf(f, "%s--%d/%d/%d--%[^\n]", tmp_c.tipo, 
+                    &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
             {
+                printf("%d/%d/%d\n", tmp_c.data.dia, tmp_c.data.mes, tmp_c.data.ano);
+                 if (!(*head_c = malloc(sizeof (**head_c))))
+                {
                 printf("Failed to allocate new list node: ");
                 return;
+                }
+                tmp_c.next = NULL;
+                **head_c = tmp_c;
+                head_c = &(*head_c)->next;
             }
-            tmp_c.next = NULL;
-            **head_c = tmp_c;
-            head_c = &(*head_c)->next;
-        }
-        
+        }**/
+        printf("%s\n", tmp.nome);
+        printf("%d\n", tmp.idade);
+        printf("%d\n", tmp.nconsultas);
         if (!(*head_p = malloc(sizeof (**head_p))))
         {
             printf("Failed to allocate new list node: ");
@@ -95,34 +148,37 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 void show_info(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {   
+    //int n = 0;
     system(CLEAR);
-    printf("\n\n\n\t\t::Medicos::\n\n");
-    while(head_m->next != NULL)
+    clock_date();
+    printf("\n\t\t::Medicos::\n\n");
+    while(head_m != NULL)
     {   
         printf( "\nMédico > %s [%s]\n", head_m->nome, head_m->especialidade );
-        printf( "Horário > %dh%dm - %dh%dm\n", head_m->entrada.h, head_m->entrada.m,
-            head_m->saida.h, head_m->saida.m);
         head_m = head_m->next;
     }
+
     printf("\n\nPrima ENTER para ver a lista de pacientes");
     getchar();
     getchar();
 
     system(CLEAR);
-    printf("\n\n\n\t\t::Pacientes::\n");
+    clock_date();
+    printf("\n\t\t::Pacientes::\n\n");
     while(head_p != NULL)
     {   
         printf( "Paciente > %s\n", head_p->nome);
         printf( "Idade > %d\n", head_p->idade);
         printf( "Consultas > %d\n", head_p->nconsultas);
-        /*while(  )
+        /**while( n < head_p->nconsultas )
         {
-            
             printf("\tData: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
                 head_c->data.ano);
             printf("\tMedico da Consulta: %s\n", head_c->medico);
             head_c = head_c->next;
-        }*/
+            n++;
+        }
+        n=0;**/
         head_p = head_p->next;
     }
     printf("\n\nPrima ENTER para voltar ao menu");
@@ -135,7 +191,8 @@ void med_by_spec(struct medico *head_m)
     int found = FALSE;
 
     system(CLEAR);
-    printf("\n\n\n\t\t::Pesquisa de Medico::\n\n");
+    clock_date();
+    printf("\n\t\t::Pesquisa de Medico::\n\n");
     printf("[MEDICO]Especialidade pretendida > ");
     scanf("%s", str);
 
