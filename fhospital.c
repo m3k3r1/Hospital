@@ -32,35 +32,65 @@ void show_all(struct medico *head_m, struct paciente *head_p ,
     dump_database(&head_m, &head_p, &head_c);
     show_info(head_m, head_p, head_c);
 }
+
 void search_med(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     med_by_spec(head_m);
 }
+
 void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     pac_by_spec(head_p, head_c);
 }
+
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
-
 }
+
 void med_now(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
-
 }
+
+int menu_apt()
+{
+    int menu_op;
+    system(CLEAR);
+    clock_date();
+    printf("\n1 - Fazer marcações\n"
+           "2 - Apagar marcações\n"
+           "3 - Mostrar marcações\n"
+           "4 - Menu anterior\n"
+           "\nOpção >> ");
+    scanf("\n%d", &menu_op);
+    return menu_op;
+}
+
 void make_appointment()
 {
+    int menu_op = 0;
 
+    do
+    {
+        menu_op = menu_apt();
+        switch(menu_op)
+        {
+            case 1: make_apt();
+                    break;
+            case 2: del_apt();
+                    break;
+            case 3: show_agd();
+                    break;
+            case 4: return;
+                    break;
+        }
+    }while(1);
 }
-
-
-
 
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c)
@@ -211,6 +241,7 @@ void med_by_spec(struct medico *head_m)
     getchar();
     getchar();
 }
+
 void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
 {
     char str[50];
@@ -218,4 +249,16 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
     printf("[PACIENTE]Especialidade pretendida > ");
     scanf("%s", str);
 
+}
+
+void make_apt()
+{
+}
+
+void del_apt()
+{
+}
+
+void show_agd()
+{
 }

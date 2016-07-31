@@ -75,3 +75,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
 void med_by_spec(struct medico *head_m);
 void pac_by_spec(struct paciente *head_p ,struct consulta *head_c);
+int menu_apt();
+void make_apt();
+void del_apt();
+void show_agd();
