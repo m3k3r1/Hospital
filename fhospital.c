@@ -9,7 +9,7 @@ int menu()
            "2 - Pesquisar médicos por especialidade\n"
            "3 - Listagem de paciente por especialidade\n"
            "4 - Listagem de paciente por período de tempo\n"
-           "5 - Médicos disponiveis\n"
+           "5 - Médicos disponiveis neste momento\n"
            "6 - Marcações\n"
            "7 - Sair\n"
            "\nOpção >> ");
@@ -19,11 +19,11 @@ int menu()
 
 void clock_date()
 {
-    time_t mytime;
-    mytime = time(NULL);
-    
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
 
-    printf("\n\t\t\t%s\n", ctime(&mytime));  
+    printf("%d/%d/%d",tm.tm_mday,tm.tm_mon + 1,tm.tm_year + 1900);
+    printf("\t\t\t\t  %dh%dm\n", tm.tm_hour, tm.tm_min);
 }
 
 void show_all(struct medico *head_m, struct paciente *head_p ,
@@ -55,6 +55,37 @@ void pac_by_time(struct medico *head_m, struct paciente *head_p ,
 void med_now(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
+    dump_database(&head_m, &head_p, &head_c);
+    check_schdl(head_m);
+}
+void check_schdl(struct medico *head_m)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    int found = FALSE;
+
+    system(CLEAR);
+    clock_date();
+    printf("\n\t\t::Medicos disponiveis::\n\n");
+
+    while(head_m != NULL)
+    {   
+        if( (head_m->entrada.h < tm.tm_hour && head_m->saida.h > tm.tm_hour)
+            || (head_m->entrada.h == tm.tm_hour && head_m->entrada.m <= tm.tm_min) 
+            || (head_m->saida.h == tm.tm_hour && head_m->saida.m >= tm.tm_min) )
+        {
+            printf( "\nMédico > %s [%s]\n", head_m->nome, head_m->especialidade );
+            found = TRUE;
+        }
+        head_m = head_m->next;
+    }
+    if(found == FALSE)
+        printf("Não existe médico disponiveis neste momento\n");
+
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
 }
 
 int menu_apt()
@@ -95,7 +126,6 @@ void make_appointment()
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c)
 {
-
     dump_med(head_m);
     dump_pac(head_p, head_c);
 }

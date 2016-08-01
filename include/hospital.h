@@ -54,6 +54,16 @@ struct paciente
     struct paciente *next;
 };
 
+struct marcacao
+{
+    char nome[50];
+    int idade;
+    struct data data;
+    char tipo[50];
+    char medico[50];
+    struct marcacao *next;
+};
+
 int menu();
 void clock_date();
 void show_all(struct medico *head_m, struct paciente *head_p ,
@@ -79,3 +89,4 @@ int menu_apt();
 void make_apt();
 void del_apt();
 void show_agd();
+void check_schdl(struct medico *head_m);
