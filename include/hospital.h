@@ -60,7 +60,7 @@ struct marcacao
     int idade;
     struct data data;
     char tipo[50];
-    char medico[50];
+    char * medico;
     struct marcacao *next;
 };
 
@@ -76,7 +76,9 @@ void pac_by_time(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
 void med_now(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
-void make_appointment();
+void make_appointment(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c, struct marcacao *head_apt);
+char * assign_med_by_spec(char *especialidade, struct medico *head_m);
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c);
 void dump_med(struct medico **head_m);
@@ -86,7 +88,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
 void med_by_spec(struct medico *head_m);
 void pac_by_spec(struct paciente *head_p ,struct consulta *head_c);
 int menu_apt();
-void make_apt();
+void make_apt(struct medico *head_m, struct marcacao **head_apt);
 void del_apt();
-void show_agd();
+void show_agd(struct marcacao *head_apt);
 void check_schdl(struct medico *head_m);

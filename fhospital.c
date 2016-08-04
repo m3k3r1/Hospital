@@ -102,7 +102,8 @@ int menu_apt()
     return menu_op;
 }
 
-void make_appointment()
+void make_appointment(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c, struct marcacao *head_apt)
 {
     int menu_op = 0;
 
@@ -111,16 +112,118 @@ void make_appointment()
         menu_op = menu_apt();
         switch(menu_op)
         {
-            case 1: make_apt();
+            case 1: dump_database(&head_m, &head_p, &head_c);
+                    make_apt(head_m, &head_apt);
                     break;
-            case 2: del_apt();
+            case 2: dump_database(&head_m, &head_p, &head_c);
+                    del_apt(&head_apt);
                     break;
-            case 3: show_agd();
+            case 3: dump_database(&head_m, &head_p, &head_c);
+                    show_agd(head_apt);
                     break;
             case 4: return;
                     break;
         }
     }while(1);
+}
+void make_apt(struct medico *head_m, struct marcacao **head_apt)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    struct marcacao tmp ;
+    char especialidade[50];    
+
+    system(CLEAR);
+    printf("\n\t\t::Marcações::\n\n");
+    printf("Nome do Paciente > ");
+    scanf(" %[^\n]", tmp.nome);
+    printf("Idade do Paciente > ");
+    scanf("%d", &tmp.idade);
+    tmp.data.dia = tm.tm_mday;
+    tmp.data.mes = tm.tm_mon + 1;
+    tmp.data.ano = tm.tm_year + 1900;
+    printf("Tipo de Consulta [Normal/Urgente] > ");
+    scanf(" %[^\n]", tmp.tipo);
+    printf("Especialidade >");
+    scanf(" %[^\n]", especialidade);
+    tmp.medico = assign_med_by_spec(especialidade, head_m);
+
+    if (!(*head_apt = malloc(sizeof (**head_apt))))
+    {
+        printf("Failed to allocate new list node: ");
+        return;
+    }
+
+    tmp.next = NULL;
+    **head_apt = tmp;
+    head_apt = &(*head_apt)->next;
+
+    printf("\n\n[MARCAÇÃO] - Prima ENTER para confirmar consulta");
+    getchar();
+    getchar();
+
+}
+
+char * assign_med_by_spec(char *especialidade, struct medico *head_m)
+{
+    while(head_m != NULL)
+    {   
+        if(!strcmp(especialidade, head_m->especialidade)){
+            printf( "\nMédico > %s\n", head_m->nome);
+            return head_m->nome;
+        }
+        head_m = head_m->next;
+    }
+    return 0;
+}
+        
+
+void del_apt(struct consulta ** head_apt)
+{
+    char *tmp_nome;
+
+    printf("Qual marcação pretende apagar ?\n");
+    if(head_apt == NULL)
+    {
+        printf("Não foram efetuadas marcações\n");
+        printf("\n\nPrima ENTER para voltar ao menu");
+        getchar();
+        getchar();
+        return;
+
+    while(head_apt != NULL)
+    {
+        printf("Nome > %s\n", head_apt->nome);
+        head_apt->next = head_apt;
+    }
+    scanf(" %[\n]", tmp_nome)
+
+
+}
+
+void show_agd(struct marcacao *head_apt)
+{
+    clock_date();
+    printf("\n\t\t::Marcações::\n\n");
+    if(head_apt == NULL)
+    {
+        printf("Não foram efetuadas marcações\n");
+        printf("\n\nPrima ENTER para voltar ao menu");
+        getchar();
+        getchar();
+        return;
+    }
+    while(head_apt != NULL)
+    {
+        printf("Nome > %s\n", head_apt->nome);
+        printf("Idade > %d\n",head_apt->idade);
+        printf("Tipo > %s\n", head_apt->tipo);
+        printf("Medico > %s\n", head_apt->medico);
+        head_apt->next = head_apt;
+    }
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
 }
 
 void dump_database(struct medico **head_m, struct paciente **head_p ,
@@ -161,7 +264,7 @@ void dump_med(struct medico **head_m)
 void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 {
     struct paciente tmp;
-    //struct consulta tmp_c;
+    struct consulta tmp_c;
 
     FILE *f = fopen(P_FILE, "r");
         if(f == NULL)
@@ -174,9 +277,9 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
           fscanf(f, "%d", &tmp.idade) == 1 &&
           fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
     {
-        /**if(tmp.nconsultas > 0)
+        if(tmp.nconsultas > 0)
         {
-            while(fscanf(f, "%s--%d/%d/%d--%[^\n]", tmp_c.tipo, 
+            while(fscanf(f, "%c - %d/%d/%d - %[^\n]", tmp_c.tipo, 
                     &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
             {
                 printf("%d/%d/%d\n", tmp_c.data.dia, tmp_c.data.mes, tmp_c.data.ano);
@@ -189,10 +292,7 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
                 **head_c = tmp_c;
                 head_c = &(*head_c)->next;
             }
-        }**/
-        printf("%s\n", tmp.nome);
-        printf("%d\n", tmp.idade);
-        printf("%d\n", tmp.nconsultas);
+        }
         if (!(*head_p = malloc(sizeof (**head_p))))
         {
             printf("Failed to allocate new list node: ");
@@ -208,7 +308,7 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 void show_info(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {   
-    //int n = 0;
+    int n = 0;
     system(CLEAR);
     clock_date();
     printf("\n\t\t::Medicos::\n\n");
@@ -230,7 +330,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
         printf( "Paciente > %s\n", head_p->nome);
         printf( "Idade > %d\n", head_p->idade);
         printf( "Consultas > %d\n", head_p->nconsultas);
-        /**while( n < head_p->nconsultas )
+        while( n < head_p->nconsultas )
         {
             printf("\tData: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
                 head_c->data.ano);
@@ -238,7 +338,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
             head_c = head_c->next;
             n++;
         }
-        n=0;**/
+        n=0;
         head_p = head_p->next;
     }
     printf("\n\nPrima ENTER para voltar ao menu");
@@ -281,14 +381,3 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
 
 }
 
-void make_apt()
-{
-}
-
-void del_apt()
-{
-}
-
-void show_agd()
-{
-}

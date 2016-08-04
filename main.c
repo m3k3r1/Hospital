@@ -6,6 +6,7 @@ int main()
         struct medico *head_m = NULL;
         struct paciente *head_p = NULL;
         struct consulta *head_c = NULL;
+        struct marcacao *head_apt = NULL;
         
 	do
         {
@@ -22,7 +23,7 @@ int main()
                                 break;
                         case 5: med_now(head_m, head_p, head_c);
                                 break;
-                        case 6: make_appointment();
+                        case 6: make_appointment(head_m, head_p, head_c, head_apt);
                                 break;
                         case 7: return 0;
                                 break;
