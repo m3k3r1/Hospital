@@ -8,9 +8,9 @@ Estruturas necessarias
 Gestao de informacao de medicos e pacientes
   - Listagem completa de medicos e pacientes
   - Pesquisar medicos por especialidade
-  - Listagem de pacientes por especialidades do medico da consulta
+  - Listagem de pacientes por especialidades 
   - Listagem de consultas dos pacientes num determinados periodo
-  - Listagem de consultas urgentes
+  - Médicos disponiveis
 
 Marcação de Consulta
   - Marcação de um consulta

@@ -1,5 +1,7 @@
 #include "hospital.h"
 
+/**######################################## MENU 1 ###########################################**/
+
 int menu()
 {
     int menu_op;
@@ -17,14 +19,7 @@ int menu()
     return menu_op;
 }
 
-void clock_date()
-{
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-
-    printf("%d/%d/%d",tm.tm_mday,tm.tm_mon + 1,tm.tm_year + 1900);
-    printf("\t\t\t\t  %dh%dm\n", tm.tm_hour, tm.tm_min);
-}
+/**######################################## OPÇÃO 1 ###########################################**/
 
 void show_all(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
@@ -33,12 +28,16 @@ void show_all(struct medico *head_m, struct paciente *head_p ,
     show_info(head_m, head_p, head_c);
 }
 
+/**######################################## OPÇÃO 2 ###########################################**/
+
 void search_med(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     med_by_spec(head_m);
 }
+
+/**######################################## OPÇÃO 3 ###########################################**/
 
 void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
@@ -47,10 +46,14 @@ void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
     pac_by_spec(head_p, head_c);
 }
 
+/**######################################## OPÇÃO 4 ###########################################**/
+
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
 }
+
+/**######################################## OPÇÃO 5 ###########################################**/
 
 void med_now(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
@@ -58,49 +61,8 @@ void med_now(struct medico *head_m, struct paciente *head_p ,
     dump_database(&head_m, &head_p, &head_c);
     check_schdl(head_m);
 }
-void check_schdl(struct medico *head_m)
-{
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
 
-    int found = FALSE;
-
-    system(CLEAR);
-    clock_date();
-    printf("\n\t\t::Medicos disponiveis::\n\n");
-
-    while(head_m != NULL)
-    {   
-        if( (head_m->entrada.h < tm.tm_hour && head_m->saida.h > tm.tm_hour)
-            || (head_m->entrada.h == tm.tm_hour && head_m->entrada.m <= tm.tm_min) 
-            || (head_m->saida.h == tm.tm_hour && head_m->saida.m >= tm.tm_min) )
-        {
-            printf( "\nMédico > %s [%s]\n", head_m->nome, head_m->especialidade );
-            found = TRUE;
-        }
-        head_m = head_m->next;
-    }
-    if(found == FALSE)
-        printf("Não existe médico disponiveis neste momento\n");
-
-    printf("\n\nPrima ENTER para voltar ao menu");
-    getchar();
-    getchar();
-}
-
-int menu_apt()
-{
-    int menu_op;
-    system(CLEAR);
-    clock_date();
-    printf("\n1 - Fazer marcações\n"
-           "2 - Apagar marcações\n"
-           "3 - Mostrar marcações\n"
-           "4 - Menu anterior\n"
-           "\nOpção >> ");
-    scanf("\n%d", &menu_op);
-    return menu_op;
-}
+/**######################################## OPÇÃO 6 ###########################################**/
 
 void make_appointment(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c, struct marcacao *head_apt)
@@ -126,104 +88,26 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
         }
     }while(1);
 }
-void make_apt(struct medico *head_m, struct marcacao **head_apt)
+
+/**######################################## OPÇÃO 7 ###########################################**/
+
+void sv_chg(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c, struct marcacao *head_apt)
+{
+    sv_apt(head_apt);
+    upt_pac(head_apt);
+    free_mem(&head_m, &head_p, &head_c, &head_apt);
+}
+
+/**##################################### [REQUESITOS GERAIS] ###################################**/
+
+void clock_date()
 {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    struct marcacao tmp ;
-    char especialidade[50];    
 
-    system(CLEAR);
-    printf("\n\t\t::Marcações::\n\n");
-    printf("Nome do Paciente > ");
-    scanf(" %[^\n]", tmp.nome);
-    printf("Idade do Paciente > ");
-    scanf("%d", &tmp.idade);
-    tmp.data.dia = tm.tm_mday;
-    tmp.data.mes = tm.tm_mon + 1;
-    tmp.data.ano = tm.tm_year + 1900;
-    printf("Tipo de Consulta [Normal/Urgente] > ");
-    scanf(" %[^\n]", tmp.tipo);
-    printf("Especialidade >");
-    scanf(" %[^\n]", especialidade);
-    tmp.medico = assign_med_by_spec(especialidade, head_m);
-
-    if (!(*head_apt = malloc(sizeof (**head_apt))))
-    {
-        printf("Failed to allocate new list node: ");
-        return;
-    }
-
-    tmp.next = NULL;
-    **head_apt = tmp;
-    head_apt = &(*head_apt)->next;
-
-    printf("\n\n[MARCAÇÃO] - Prima ENTER para confirmar consulta");
-    getchar();
-    getchar();
-
-}
-
-char * assign_med_by_spec(char *especialidade, struct medico *head_m)
-{
-    while(head_m != NULL)
-    {   
-        if(!strcmp(especialidade, head_m->especialidade)){
-            printf( "\nMédico > %s\n", head_m->nome);
-            return head_m->nome;
-        }
-        head_m = head_m->next;
-    }
-    return 0;
-}
-        
-
-void del_apt(struct consulta ** head_apt)
-{
-    char *tmp_nome;
-
-    printf("Qual marcação pretende apagar ?\n");
-    if(head_apt == NULL)
-    {
-        printf("Não foram efetuadas marcações\n");
-        printf("\n\nPrima ENTER para voltar ao menu");
-        getchar();
-        getchar();
-        return;
-
-    while(head_apt != NULL)
-    {
-        printf("Nome > %s\n", head_apt->nome);
-        head_apt->next = head_apt;
-    }
-    scanf(" %[\n]", tmp_nome)
-
-
-}
-
-void show_agd(struct marcacao *head_apt)
-{
-    clock_date();
-    printf("\n\t\t::Marcações::\n\n");
-    if(head_apt == NULL)
-    {
-        printf("Não foram efetuadas marcações\n");
-        printf("\n\nPrima ENTER para voltar ao menu");
-        getchar();
-        getchar();
-        return;
-    }
-    while(head_apt != NULL)
-    {
-        printf("Nome > %s\n", head_apt->nome);
-        printf("Idade > %d\n",head_apt->idade);
-        printf("Tipo > %s\n", head_apt->tipo);
-        printf("Medico > %s\n", head_apt->medico);
-        head_apt->next = head_apt;
-    }
-    printf("\n\nPrima ENTER para voltar ao menu");
-    getchar();
-    getchar();
+    printf("%d/%d/%d",tm.tm_mday,tm.tm_mon + 1,tm.tm_year + 1900);
+    printf("\t\t\t\t  %dh%dm\n", tm.tm_hour, tm.tm_min);
 }
 
 void dump_database(struct medico **head_m, struct paciente **head_p ,
@@ -305,6 +189,8 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
     fclose(f);
 }
 
+/**##################################### 1 [REQUESITOS] ######################################**/
+
 void show_info(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {   
@@ -345,6 +231,8 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
     getchar();
 }
 
+/**##################################### 2 [REQUESITOS] ######################################**/
+
 void med_by_spec(struct medico *head_m)
 {
     char str[50];
@@ -372,6 +260,8 @@ void med_by_spec(struct medico *head_m)
     getchar();
 }
 
+/**##################################### 3 [REQUESITOS] ######################################**/
+
 void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
 {
     char str[50];
@@ -380,4 +270,178 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
     scanf("%s", str);
 
 }
+
+/**##################################### 4 [REQUESITOS] ######################################**/
+
+
+
+/**##################################### 5 [REQUESITOS] ######################################**/
+
+void check_schdl(struct medico *head_m)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    int found = FALSE;
+
+    system(CLEAR);
+    clock_date();
+    printf("\n\t\t::Medicos disponiveis::\n\n");
+
+    while(head_m != NULL)
+    {   
+        if( (head_m->entrada.h < tm.tm_hour && head_m->saida.h > tm.tm_hour)
+            || (head_m->entrada.h == tm.tm_hour && head_m->entrada.m <= tm.tm_min) 
+            || (head_m->saida.h == tm.tm_hour && head_m->saida.m >= tm.tm_min) )
+        {
+            printf( "\nMédico > %s [%s]\n", head_m->nome, head_m->especialidade );
+            found = TRUE;
+        }
+        head_m = head_m->next;
+    }
+    if(found == FALSE)
+        printf("Não existe médico disponiveis neste momento\n");
+
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
+}
+
+/**##################################### 6 [REQUESITOS] ######################################**/
+
+/**---------------------------------------- MENU 2 -------------------------------------------**/
+
+int menu_apt()
+{
+    int menu_op;
+    system(CLEAR);
+    clock_date();
+    printf("\n1 - Fazer marcações\n"
+           "2 - Apagar marcações\n"
+           "3 - Mostrar marcações\n"
+           "4 - Menu anterior\n"
+           "\nOpção >> ");
+    scanf("\n%d", &menu_op);
+    return menu_op;
+}
+
+/**--------------------------------------  OPÇÃO 1 -----------------------------------------**/
+
+void make_apt(struct medico *head_m, struct marcacao **head_apt)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    struct marcacao tmp ;
+    char especialidade[50];    
+
+    system(CLEAR);
+    printf("\n\t\t::Marcações::\n\n");
+    printf("Nome do Paciente > ");
+    scanf(" %[^\n]", tmp.nome);
+    printf("Idade do Paciente > ");
+    scanf("%d", &tmp.idade);
+    tmp.data.dia = tm.tm_mday;
+    tmp.data.mes = tm.tm_mon + 1;
+    tmp.data.ano = tm.tm_year + 1900;
+    printf("Tipo de Consulta [Normal/Urgente] > ");
+    scanf(" %[^\n]", tmp.tipo);
+    printf("Especialidade >");
+    scanf(" %[^\n]", especialidade);
+    tmp.medico = assign_med_by_spec(especialidade, head_m);
+
+    if (!(*head_apt = malloc(sizeof (**head_apt))))
+    {
+        printf("Failed to allocate new list node: ");
+        return;
+    }
+
+    tmp.next = NULL;
+    **head_apt = tmp;
+    head_apt = &(*head_apt)->next;
+
+    printf("\n\n[MARCAÇÃO] - Prima ENTER para confirmar consulta");
+    getchar();
+    getchar();
+
+}
+        
+/**-------------------------------------  OPÇÃO 2 ------------------------------------------**/
+
+void del_apt(struct marcacao ** head_apt)
+{
+    printf("Qual marcação pretende apagar ?\n");
+    if(head_apt == NULL)
+    {
+        printf("Não foram efetuadas marcações\n");
+        printf("\n\nPrima ENTER para voltar ao menu");
+        getchar();
+        getchar();
+        return;
+    }
+}
+
+/**-------------------------------------  OPÇÃO 3 ------------------------------------------**/
+
+void show_agd(struct marcacao *head_apt)
+{
+    clock_date();
+    printf("\n\t\t::Marcações::\n\n");
+    if(head_apt == NULL)
+    {
+        printf("Não foram efetuadas marcações\n");
+        printf("\n\nPrima ENTER para voltar ao menu");
+        getchar();
+        getchar();
+        return;
+    }
+    while(head_apt != NULL)
+    {
+        printf("Nome > %s\n", head_apt->nome);
+        printf("Idade > %d\n",head_apt->idade);
+        printf("Tipo > %s\n", head_apt->tipo);
+        printf("Medico > %s\n", head_apt->medico);
+        head_apt->next = head_apt;
+    }
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
+}
+
+/**-------------------------------------- 1 [REQUESITOS] #----------------------------------**/
+
+char * assign_med_by_spec(char *especialidade, struct medico *head_m)
+{
+    while(head_m != NULL)
+    {   
+        if(!strcmp(especialidade, head_m->especialidade)){
+            printf( "\nMédico > %s\n", head_m->nome);
+            return head_m->nome;
+        }
+        head_m = head_m->next;
+    }
+    return 0;
+}
+
+
+/**##################################### 7 [REQUESITOS] ######################################**/
+
+void sv_apt(struct marcacao *head_apt)
+{
+
+}
+
+void upt_pac(struct marcacao *head_apt)
+{
+
+}
+
+void free_mem(struct medico **head_m, struct paciente **head_p ,
+    struct consulta **head_c, struct marcacao **head_apt)
+{
+
+}
+
+
+
+
 
