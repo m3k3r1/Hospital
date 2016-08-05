@@ -331,7 +331,7 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
 {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    struct marcacao tmp ;
+    struct marcacao tmp;
     char especialidade[50];    
 
     system(CLEAR);
@@ -400,7 +400,7 @@ void show_agd(struct marcacao *head_apt)
         printf("Idade > %d\n",head_apt->idade);
         printf("Tipo > %s\n", head_apt->tipo);
         printf("Medico > %s\n", head_apt->medico);
-        head_apt->next = head_apt;
+        head_apt = head_apt->next;
     }
     printf("\n\nPrima ENTER para voltar ao menu");
     getchar();
@@ -440,8 +440,3 @@ void free_mem(struct medico **head_m, struct paciente **head_p ,
 {
 
 }
-
-
-
-
-

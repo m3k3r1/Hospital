@@ -59,6 +59,7 @@ struct marcacao
     char nome[50];
     int idade;
     struct data data;
+    struct horas horas;
     char tipo[50];
     char * medico;
     struct marcacao *next;
