@@ -22,44 +22,49 @@ int menu()
 /**######################################## OPÇÃO 1 ###########################################**/
 
 void show_all(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c)
+    struct consulta *head_c, struct marcacao *head_apt)
 {
     dump_database(&head_m, &head_p, &head_c);
     show_info(head_m, head_p, head_c);
+    //free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 2 ###########################################**/
 
 void search_med(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c)
+    struct consulta *head_c, struct marcacao *head_apt)
 {
     dump_database(&head_m, &head_p, &head_c);
     med_by_spec(head_m);
+    //free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 3 ###########################################**/
 
 void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c)
+    struct consulta *head_c, struct marcacao *head_apt)
 {
     dump_database(&head_m, &head_p, &head_c);
     pac_by_spec(head_p, head_c);
+    //free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 4 ###########################################**/
 
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c)
+    struct consulta *head_c, struct marcacao *head_apt)
 {
+    //free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 5 ###########################################**/
 
 void med_now(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c)
+    struct consulta *head_c, struct marcacao *head_apt)
 {
     dump_database(&head_m, &head_p, &head_c);
     check_schdl(head_m);
+    //free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 6 ###########################################**/
@@ -76,12 +81,15 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
         {
             case 1: dump_database(&head_m, &head_p, &head_c);
                     make_apt(head_m, &head_apt);
+                    //free_mem(head_m, head_p, head_c, head_apt);
                     break;
             case 2: dump_database(&head_m, &head_p, &head_c);
                     del_apt(&head_apt);
+                    //free_mem(head_m, head_p, head_c, head_apt);
                     break;
             case 3: dump_database(&head_m, &head_p, &head_c);
                     show_agd(head_apt);
+                    //free_mem(head_m, head_p, head_c, head_apt);
                     break;
             case 4: return;
                     break;
@@ -96,7 +104,6 @@ void sv_chg(struct medico *head_m, struct paciente *head_p ,
 {
     sv_apt(head_apt);
     upt_pac(head_apt);
-    free_mem(&head_m, &head_p, &head_c, &head_apt);
 }
 
 /**##################################### [REQUESITOS GERAIS] ###################################**/
@@ -187,6 +194,35 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
         head_p = &(*head_p)->next;
     }
     fclose(f);
+}
+
+void free_mem(struct medico *head_m, struct paciente *head_p ,
+    struct consulta *head_c, struct marcacao *head_apt)
+{   
+    while (!head_m)
+    { 
+        struct medico *tmp_next = head_m->next; 
+        free(head_m);
+        head_m = tmp_next;
+    }
+   while (!head_p)
+    { 
+        struct paciente *tmp_next = head_p->next; 
+        free(head_p);
+        head_p = tmp_next;
+    }
+    while (!head_c)
+    { 
+        struct consulta *tmp_next = head_c->next; 
+        free(head_c);
+        head_c = tmp_next;
+    }
+    while (!head_apt)
+    { 
+        struct marcacao *tmp_next = head_apt->next; 
+        free(head_apt);
+        head_apt = tmp_next;
+    }
 }
 
 /**##################################### 1 [REQUESITOS] ######################################**/
@@ -435,8 +471,3 @@ void upt_pac(struct marcacao *head_apt)
 
 }
 
-void free_mem(struct medico **head_m, struct paciente **head_p ,
-    struct consulta **head_c, struct marcacao **head_apt)
-{
-
-}
