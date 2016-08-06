@@ -22,37 +22,37 @@ int menu()
 /**######################################## OPÇÃO 1 ###########################################**/
 
 void show_all(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     show_info(head_m, head_p, head_c);
-    //free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c);
 }
 
 /**######################################## OPÇÃO 2 ###########################################**/
 
 void search_med(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     med_by_spec(head_m);
-    //free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 3 ###########################################**/
 
 void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     pac_by_spec(head_p, head_c);
-    //free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 4 ###########################################**/
 
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {
     //free_mem(head_m, head_p, head_c, head_apt);
 }
@@ -60,11 +60,11 @@ void pac_by_time(struct medico *head_m, struct paciente *head_p ,
 /**######################################## OPÇÃO 5 ###########################################**/
 
 void med_now(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
     check_schdl(head_m);
-    //free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c, head_apt);
 }
 
 /**######################################## OPÇÃO 6 ###########################################**/
@@ -164,29 +164,25 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
         return;
     }
 
-    while(fscanf(f, "%[^\n]", tmp.nome) == 1 &&
-          fscanf(f, "%d", &tmp.idade) == 1 &&
+    while(fscanf(f,"%[^\n]", tmp.nome) == 1 &&
+          fscanf(f, " %d", &tmp.idade) == 1 &&
           fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
     {
-        if(tmp.nconsultas > 0)
-        {
-            while(fscanf(f, "%c - %d/%d/%d - %[^\n]", tmp_c.tipo, 
+        while(fscanf(f, "%s - %d/%d/%d - %[^\n]", tmp_c.tipo, 
                     &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
-            {
-                printf("%d/%d/%d\n", tmp_c.data.dia, tmp_c.data.mes, tmp_c.data.ano);
-                 if (!(*head_c = malloc(sizeof (**head_c))))
-                {
-                printf("Failed to allocate new list node: ");
-                return;
-                }
-                tmp_c.next = NULL;
-                **head_c = tmp_c;
-                head_c = &(*head_c)->next;
-            }
-        }
-        if (!(*head_p = malloc(sizeof (**head_p))))
         {
-            printf("Failed to allocate new list node: ");
+             if ( !(*head_c = malloc(sizeof (**head_c))) )
+            {
+                printf("Erro a alocar o novo nó \n");
+                return;
+            }
+            tmp_c.next = NULL;
+            **head_c = tmp_c;
+            head_c = &(*head_c)->next;
+        }
+        if ( !(*head_p = malloc(sizeof (**head_p))) )
+        {
+            printf("Erro a alocar o novo nó \n");
             return;
         }
         tmp.next = NULL;
@@ -197,7 +193,7 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 }
 
 void free_mem(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt)
+    struct consulta *head_c)
 {   
     while (!head_m)
     { 
@@ -216,12 +212,6 @@ void free_mem(struct medico *head_m, struct paciente *head_p ,
         struct consulta *tmp_next = head_c->next; 
         free(head_c);
         head_c = tmp_next;
-    }
-    while (!head_apt)
-    { 
-        struct marcacao *tmp_next = head_apt->next; 
-        free(head_apt);
-        head_apt = tmp_next;
     }
 }
 
@@ -249,14 +239,15 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
     printf("\n\t\t::Pacientes::\n\n");
     while(head_p != NULL)
     {   
-        printf( "Paciente > %s\n", head_p->nome);
+        printf( "\nPaciente > %s\n", head_p->nome);
         printf( "Idade > %d\n", head_p->idade);
         printf( "Consultas > %d\n", head_p->nconsultas);
         while( n < head_p->nconsultas )
         {
-            printf("\tData: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
+            printf("\t[Tipo]: %s\n", head_c->tipo);
+            printf("\t[Data]: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
                 head_c->data.ano);
-            printf("\tMedico da Consulta: %s\n", head_c->medico);
+            printf("\t[Medico] : %s\n", head_c->medico);
             head_c = head_c->next;
             n++;
         }

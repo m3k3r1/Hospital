@@ -13,15 +13,15 @@ int main()
                 menu_op = menu();
                 switch(menu_op)
 	        {
-    	                case 1: show_all(head_m, head_p, head_c, head_apt);
+    	                case 1: show_all(head_m, head_p, head_c);
                                 break;
-                        case 2: search_med(head_m, head_p, head_c, head_apt);
+                        case 2: search_med(head_m, head_p, head_c);
                                 break;
-                        case 3: pac_by_speciality(head_m, head_p, head_c, head_apt);
+                        case 3: pac_by_speciality(head_m, head_p, head_c);
                                 break;
-                        case 4: pac_by_time(head_m, head_p, head_c, head_apt);
+                        case 4: pac_by_time(head_m, head_p, head_c);
                                 break;
-                        case 5: med_now(head_m, head_p, head_c, head_apt);
+                        case 5: med_now(head_m, head_p, head_c);
                                 break;
                         case 6: make_appointment(head_m, head_p, head_c, head_apt);
                                 break;

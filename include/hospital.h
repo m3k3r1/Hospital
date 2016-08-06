@@ -68,20 +68,17 @@ struct marcacao
 int menu();
 void clock_date();
 void show_all(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_c);
 void search_med(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_c);
 void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_c);
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_c);
 void med_now(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_c);
 void make_appointment(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c, struct marcacao *head_apt);
-
-
-    
 char * assign_med_by_spec(char *especialidade, struct medico *head_m);
 void dump_database(struct medico **head_m, struct paciente **head_p ,
     struct consulta **head_c);
@@ -101,4 +98,4 @@ void sv_chg(struct medico *head_m, struct paciente *head_p ,
 void sv_apt(struct marcacao *head_apt);
 void upt_pac(struct marcacao *head_apt);
 void free_mem(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_c, struct marcacao *head_apt);
+    struct consulta *head_cs);
