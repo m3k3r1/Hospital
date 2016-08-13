@@ -98,4 +98,4 @@ void sv_chg(struct medico *head_m, struct paciente *head_p ,
 void sv_apt(struct marcacao *head_apt);
 void upt_pac(struct marcacao *head_apt);
 void free_mem(struct medico *head_m, struct paciente *head_p ,
-    struct consulta *head_cs);
+    struct consulta *head_c);

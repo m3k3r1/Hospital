@@ -23,7 +23,8 @@ int main()
                                 break;
                         case 5: med_now(head_m, head_p, head_c);
                                 break;
-                        case 6: make_appointment(head_m, head_p, head_c, head_apt);
+                        case 6: make_appointment(head_m, head_p, head_c, 
+                                        head_apt);
                                 break;
                         case 7: sv_chg(head_m, head_p, head_c, head_apt);
                                 return 0;

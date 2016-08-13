@@ -36,7 +36,7 @@ void search_med(struct medico *head_m, struct paciente *head_p ,
 {
     dump_database(&head_m, &head_p, &head_c);
     med_by_spec(head_m);
-    free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c);
 }
 
 /**######################################## OPÇÃO 3 ###########################################**/
@@ -46,7 +46,7 @@ void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
 {
     dump_database(&head_m, &head_p, &head_c);
     pac_by_spec(head_p, head_c);
-    free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c);
 }
 
 /**######################################## OPÇÃO 4 ###########################################**/
@@ -54,7 +54,7 @@ void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
-    //free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c);
 }
 
 /**######################################## OPÇÃO 5 ###########################################**/
@@ -64,7 +64,7 @@ void med_now(struct medico *head_m, struct paciente *head_p ,
 {
     dump_database(&head_m, &head_p, &head_c);
     check_schdl(head_m);
-    free_mem(head_m, head_p, head_c, head_apt);
+    free_mem(head_m, head_p, head_c);
 }
 
 /**######################################## OPÇÃO 6 ###########################################**/
@@ -80,21 +80,21 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
         switch(menu_op)
         {
             case 1: dump_database(&head_m, &head_p, &head_c);
-                    make_apt(head_m, &head_apt);
-                    //free_mem(head_m, head_p, head_c, head_apt);
-                    break;
+                          make_apt(head_m, &head_apt);
+                          free_mem(head_m, head_p, head_c);
+                          break;
             case 2: dump_database(&head_m, &head_p, &head_c);
-                    del_apt(&head_apt);
-                    //free_mem(head_m, head_p, head_c, head_apt);
-                    break;
+                          del_apt(&head_apt);
+                          free_mem(head_m, head_p, head_c);
+                          break;
             case 3: dump_database(&head_m, &head_p, &head_c);
-                    show_agd(head_apt);
-                    //free_mem(head_m, head_p, head_c, head_apt);
-                    break;
+                          show_agd(head_apt);
+                          free_mem(head_m, head_p, head_c);
+                          break;
             case 4: return;
-                    break;
+                          break;
         }
-    }while(1);
+    } while(1);
 }
 
 /**######################################## OPÇÃO 7 ###########################################**/
@@ -195,23 +195,27 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 void free_mem(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {   
-    while (!head_m)
+    struct medico *tmp_m = NULL; 
+    struct paciente *tmp_p = NULL; 
+    struct consulta *tmp_c = NULL; 
+
+    while (head_m)
     { 
-        struct medico *tmp_next = head_m->next; 
+        tmp_m = head_m->next;
         free(head_m);
-        head_m = tmp_next;
+        head_m = tmp_m;
     }
-   while (!head_p)
+   while (head_p)
     { 
-        struct paciente *tmp_next = head_p->next; 
+        tmp_p = head_p->next;
         free(head_p);
-        head_p = tmp_next;
+        head_p = tmp_p;
     }
-    while (!head_c)
+    while (head_c)
     { 
-        struct consulta *tmp_next = head_c->next; 
+        tmp_c = head_c->next;
         free(head_c);
-        head_c = tmp_next;
+        head_c = tmp_c;
     }
 }
 
@@ -355,11 +359,17 @@ int menu_apt()
 /**--------------------------------------  OPÇÃO 1 -----------------------------------------**/
 
 void make_apt(struct medico *head_m, struct marcacao **head_apt)
-{
+{  
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     struct marcacao tmp;
-    char especialidade[50];    
+    char especialidade[50];
+
+    while( *head_apt != NULL)
+    {
+        printf("I'm deleting the previous info\n");
+        head_apt = &(*head_apt)->next;  
+    }
 
     system(CLEAR);
     printf("\n\t\t::Marcações::\n\n");
@@ -372,19 +382,18 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     tmp.data.ano = tm.tm_year + 1900;
     printf("Tipo de Consulta [Normal/Urgente] > ");
     scanf(" %[^\n]", tmp.tipo);
-    printf("Especialidade >");
+    printf("Especialidade > ");
     scanf(" %[^\n]", especialidade);
     tmp.medico = assign_med_by_spec(especialidade, head_m);
-
-    if (!(*head_apt = malloc(sizeof (**head_apt))))
+    tmp.next = NULL;
+    
+    if ( !(*head_apt = malloc( sizeof (**head_apt) ) ) )
     {
         printf("Failed to allocate new list node: ");
         return;
     }
 
-    tmp.next = NULL;
     **head_apt = tmp;
-    head_apt = &(*head_apt)->next;
 
     printf("\n\n[MARCAÇÃO] - Prima ENTER para confirmar consulta");
     getchar();
@@ -411,8 +420,10 @@ void del_apt(struct marcacao ** head_apt)
 
 void show_agd(struct marcacao *head_apt)
 {
+    system(CLEAR);
     clock_date();
     printf("\n\t\t::Marcações::\n\n");
+    
     if(head_apt == NULL)
     {
         printf("Não foram efetuadas marcações\n");
@@ -423,7 +434,7 @@ void show_agd(struct marcacao *head_apt)
     }
     while(head_apt != NULL)
     {
-        printf("Nome > %s\n", head_apt->nome);
+        printf("\nNome > %s\n", head_apt->nome);
         printf("Idade > %d\n",head_apt->idade);
         printf("Tipo > %s\n", head_apt->tipo);
         printf("Medico > %s\n", head_apt->medico);
@@ -448,6 +459,7 @@ char * assign_med_by_spec(char *especialidade, struct medico *head_m)
     }
     return 0;
 }
+
 
 
 /**##################################### 7 [REQUESITOS] ######################################**/
