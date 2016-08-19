@@ -87,7 +87,8 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c);
 void show_info(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
 void med_by_spec(struct medico *head_m);
-void pac_by_spec(struct paciente *head_p ,struct consulta *head_c);
+void pac_by_spec(struct paciente *head_p ,struct consulta *head_c, 
+    struct medico *head_m);
 int menu_apt();
 void make_apt(struct medico *head_m, struct marcacao **head_apt);
 void del_apt(struct marcacao ** head_apt);
@@ -99,3 +100,4 @@ void sv_apt(struct marcacao *head_apt);
 void upt_pac(struct marcacao *head_apt);
 void free_mem(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
+void free_apt(struct marcacao *head_apt);

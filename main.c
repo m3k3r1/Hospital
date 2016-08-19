@@ -14,21 +14,21 @@ int main()
                 switch(menu_op)
 	        {
     	                case 1: show_all(head_m, head_p, head_c);
-                                break;
+                                     break;
                         case 2: search_med(head_m, head_p, head_c);
-                                break;
+                                      break;
                         case 3: pac_by_speciality(head_m, head_p, head_c);
-                                break;
+                                      break;
                         case 4: pac_by_time(head_m, head_p, head_c);
-                                break;
+                                      break;
                         case 5: med_now(head_m, head_p, head_c);
-                                break;
+                                      break;
                         case 6: make_appointment(head_m, head_p, head_c, 
                                         head_apt);
-                                break;
+                                      break;
                         case 7: sv_chg(head_m, head_p, head_c, head_apt);
-                                return 0;
-                                break;
+                                      return 0;
+                                      break;
 	        }
                 
         }while(1);

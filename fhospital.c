@@ -45,7 +45,7 @@ void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
     dump_database(&head_m, &head_p, &head_c);
-    pac_by_spec(head_p, head_c);
+    pac_by_spec(head_p, head_c, head_m);
     free_mem(head_m, head_p, head_c);
 }
 
@@ -82,14 +82,17 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
             case 1: dump_database(&head_m, &head_p, &head_c);
                           make_apt(head_m, &head_apt);
                           free_mem(head_m, head_p, head_c);
+                          free_apt(head_apt);
                           break;
             case 2: dump_database(&head_m, &head_p, &head_c);
                           del_apt(&head_apt);
                           free_mem(head_m, head_p, head_c);
+                          free_apt(head_apt);
                           break;
             case 3: dump_database(&head_m, &head_p, &head_c);
                           show_agd(head_apt);
                           free_mem(head_m, head_p, head_c);
+                          free_apt(head_apt);
                           break;
             case 4: return;
                           break;
@@ -165,9 +168,10 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
     }
 
     while(fscanf(f,"%[^\n]", tmp.nome) == 1 &&
-          fscanf(f, " %d", &tmp.idade) == 1 &&
-          fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
+              fscanf(f, " %d", &tmp.idade) == 1 &&
+              fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
     {
+        printf("!!!!NOME > %s\n", tmp.nome);
         while(fscanf(f, "%s - %d/%d/%d - %[^\n]", tmp_c.tipo, 
                     &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
         {
@@ -219,6 +223,17 @@ void free_mem(struct medico *head_m, struct paciente *head_p ,
     }
 }
 
+void free_apt(struct marcacao *head_apt)
+{
+    struct marcacao *tmp_apt = NULL; 
+
+    while (head_apt)
+    { 
+        tmp_apt = head_apt->next;
+        free(head_apt);
+        head_apt = tmp_apt;
+    }
+}
 /**##################################### 1 [REQUESITOS] ######################################**/
 
 void show_info(struct medico *head_m, struct paciente *head_p ,
@@ -292,13 +307,37 @@ void med_by_spec(struct medico *head_m)
 }
 
 /**##################################### 3 [REQUESITOS] ######################################**/
-
-void pac_by_spec(struct paciente *head_p ,struct consulta *head_c)
+//FIX A REPETIÇÃO DO NOME DO PACIENTE
+void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
+    struct medico *head_m)
 {
+    int n;
     char str[50];
+    char *med;
 
-    printf("[PACIENTE]Especialidade pretendida > ");
+    system(CLEAR);
+    clock_date();
+    printf("\n\n\n[PACIENTE]Especialidade pretendida > ");
     scanf("%s", str);
+    med =  assign_med_by_spec(str, head_m);
+
+    while(head_p != NULL)
+    {   
+        while( n < head_p->nconsultas )
+        {
+            if(!strcmp(med, head_c->medico))
+                printf("\nPaciente > %s", head_p->nome);
+
+            head_c = head_c->next;
+            n++;
+        }
+        n=0;
+        head_p = head_p->next;
+    }
+    
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
 
 }
 
