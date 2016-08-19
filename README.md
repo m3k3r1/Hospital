@@ -4,13 +4,14 @@ Estruturas necessarias
   - Medico
   - Paciente
   - Consulta
+  -Marcação
 
 Gestao de informacao de medicos e pacientes
   - Listagem completa de medicos e pacientes
   - Pesquisar medicos por especialidade
   - Listagem de pacientes por especialidades 
   - Listagem de consultas dos pacientes num determinados periodo
-  - Médicos disponiveis
+  - Médicos disponiveis no momento
 
 Marcação de Consulta
   - Marcação de um consulta
