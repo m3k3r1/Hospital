@@ -4,7 +4,7 @@ Estruturas necessarias
   - Medico
   - Paciente
   - Consulta
-  -Marcação
+  - Marcação
 
 Gestao de informacao de medicos e pacientes
   - Listagem completa de medicos e pacientes
