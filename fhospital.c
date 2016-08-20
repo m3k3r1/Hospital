@@ -5,17 +5,28 @@
 int menu()
 {
     int menu_op;
-    system(CLEAR);
-    clock_date();
-    printf("\n1 - Listagem Completa de Medicos e Pacientes\n"
-           "2 - Pesquisar médicos por especialidade\n"
-           "3 - Listagem de paciente por especialidade\n"
-           "4 - Listagem de paciente por período de tempo\n"
-           "5 - Médicos disponiveis neste momento\n"
-           "6 - Marcações\n"
-           "7 - Sair\n"
-           "\nOpção >> ");
+
+    do
+    {
+        system(CLEAR);
+        clock_date();
+        printf("\n1 - Listagem Completa de Medicos e Pacientes\n"
+                "2 - Pesquisar médicos por especialidade\n"
+                "3 - Listagem de paciente por especialidade\n"
+                "4 - Listagem de paciente por período de tempo\n"
+                "5 - Médicos disponiveis neste momento\n"
+                "6 - Marcações\n"
+                "7 - Sair\n"
+                "\nOpção >> ");
     scanf("\n%d", &menu_op);
+    if(menu_op < 1 || menu_op > 7)
+    {
+        printf("\n\tOpção Inválida :: Prima ENTER para tentar outra vez");
+        getchar();
+        getchar();
+    }
+    }while( menu_op < 1 || menu_op > 7);
+
     return menu_op;
 }
 
@@ -82,19 +93,17 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
             case 1: dump_database(&head_m, &head_p, &head_c);
                           make_apt(head_m, &head_apt);
                           free_mem(head_m, head_p, head_c);
-                          free_apt(head_apt);
                           break;
             case 2: dump_database(&head_m, &head_p, &head_c);
-                          del_apt(&head_apt);
+                          del_apt(head_apt);
                           free_mem(head_m, head_p, head_c);
-                          free_apt(head_apt);
                           break;
             case 3: dump_database(&head_m, &head_p, &head_c);
                           show_agd(head_apt);
                           free_mem(head_m, head_p, head_c);
-                          free_apt(head_apt);
                           break;
-            case 4: return;
+            case 4: free_apt(head_apt);
+                          return;
                           break;
         }
     } while(1);
@@ -384,14 +393,24 @@ void check_schdl(struct medico *head_m)
 int menu_apt()
 {
     int menu_op;
-    system(CLEAR);
-    clock_date();
-    printf("\n1 - Fazer marcações\n"
-           "2 - Apagar marcações\n"
-           "3 - Mostrar marcações\n"
-           "4 - Menu anterior\n"
-           "\nOpção >> ");
-    scanf("\n%d", &menu_op);
+    do
+    {
+        system(CLEAR);
+        clock_date();
+        printf("\n1 - Fazer marcações\n"
+                "2 - Apagar marcações\n"
+                "3 - Mostrar marcações\n"
+                "4 - Menu anterior\n"
+                "\nOpção >> ");
+        scanf("\n%d", &menu_op);
+        if(menu_op < 1 || menu_op > 4 || isalpha(menu_op) == 1)
+        {
+            printf("\n\tOpção Inválida :: Prima ENTER para tentar outra vez");
+            getchar();
+            getchar();
+        }
+    }while(menu_op < 1 || menu_op > 4);
+
     return menu_op;
 }
 
@@ -403,14 +422,16 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     struct tm tm = *localtime(&t);
     struct marcacao tmp;
     char especialidade[50];
+    char choice;
 
     while( *head_apt != NULL)
     {
-        printf("I'm deleting the previous info\n");
+        //printf("I'm deleting the previous info\n");
         head_apt = &(*head_apt)->next;  
     }
 
     system(CLEAR);
+    clock_date();
     printf("\n\t\t::Marcações::\n\n");
     printf("Nome do Paciente > ");
     scanf(" %[^\n]", tmp.nome);
@@ -423,7 +444,14 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     scanf(" %[^\n]", tmp.tipo);
     printf("Especialidade > ");
     scanf(" %[^\n]", especialidade);
-    tmp.medico = assign_med_by_spec(especialidade, head_m);
+
+    printf("Deseja escolher médico ? (s/n)");
+    scanf(" %c", &choice);
+    if( choice == 115)
+        tmp.medico = med_choice(head_m, especialidade);
+    else
+        tmp.medico = assign_med_by_spec(especialidade, head_m);
+    
     tmp.next = NULL;
     
     if ( !(*head_apt = malloc( sizeof (**head_apt) ) ) )
@@ -442,17 +470,47 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
         
 /**-------------------------------------  OPÇÃO 2 ------------------------------------------**/
 
-void del_apt(struct marcacao ** head_apt)
+void del_apt(struct marcacao *head_apt)
 {
-    printf("Qual marcação pretende apagar ?\n");
-    if(head_apt == NULL)
+    struct marcacao *aux = head_apt;
+    struct marcacao **nxt = NULL;
+    int p_choice = 0;
+    int i = 1;
+    int x = 1;
+    system(CLEAR);
+    clock_date();
+
+    if(!head_apt)
     {
-        printf("Não foram efetuadas marcações\n");
+        printf("\n\n\n\tNão foram efetuadas marcações\n");
         printf("\n\nPrima ENTER para voltar ao menu");
         getchar();
         getchar();
         return;
     }
+    
+    else
+        while(aux)
+        {
+            printf("\n\n\n\t %d -> %s \n", i, aux->nome);
+            i++;
+            aux = aux->next;
+        }
+
+         printf("\nQual marcação pretende apagar ? ");
+         scanf(" %d", &p_choice);
+         
+         while(head_apt)
+         {
+             if( p_choice == x )
+             {
+                 *nxt = head_apt->next;
+                 free(head_apt);
+                 head_apt = *nxt;  
+             }
+             x++;
+             head_apt = head_apt->next;
+         }
 }
 
 /**-------------------------------------  OPÇÃO 3 ------------------------------------------**/
@@ -465,7 +523,7 @@ void show_agd(struct marcacao *head_apt)
     
     if(head_apt == NULL)
     {
-        printf("Não foram efetuadas marcações\n");
+        printf("\n\tNão foram efetuadas marcações\n");
         printf("\n\nPrima ENTER para voltar ao menu");
         getchar();
         getchar();
@@ -499,8 +557,39 @@ char * assign_med_by_spec(char *especialidade, struct medico *head_m)
     return 0;
 }
 
+char * med_choice(struct medico *head_m, char * especialidade)
+{
+    int n = 1 ;
+    int med_op;
+    int x = 1;
+    struct medico *current = head_m;
 
+    printf("Pode escolher os seguintes medicos \n");
+    while(current)
+    {
+        if(!strcmp(current->especialidade, especialidade))
+            printf("\n %d -> [Médico] - %s", n++, current->nome);
+        current = current->next;
+    }
 
+    printf("\n\nQual deseja escolher ? ");
+    scanf("%d", &med_op );
+
+    while(head_m)
+    {
+        if(!strcmp(head_m->especialidade, especialidade))
+        {
+            if(med_op == x )
+            {
+                    printf( "\nMédico > %s\n", head_m->nome);
+                    return head_m->nome;
+            }
+        x++;
+        }
+        head_m = head_m->next;
+    }
+     return 0;
+}
 /**##################################### 7 [REQUESITOS] ######################################**/
 
 void sv_apt(struct marcacao *head_apt)
@@ -512,4 +601,3 @@ void upt_pac(struct marcacao *head_apt)
 {
 
 }
-
