@@ -65,6 +65,8 @@ void pac_by_speciality(struct medico *head_m, struct paciente *head_p ,
 void pac_by_time(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c)
 {
+    dump_database(&head_m, &head_p, &head_c);
+    pac_by_t(head_p, head_c);
     free_mem(head_m, head_p, head_c);
 }
 
@@ -84,6 +86,7 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c, struct marcacao *head_apt)
 {
     int menu_op = 0;
+    //load_apt(&head_apt);
 
     do
     {
@@ -94,15 +97,12 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
                           make_apt(head_m, &head_apt);
                           free_mem(head_m, head_p, head_c);
                           break;
-            case 2: dump_database(&head_m, &head_p, &head_c);
-                          del_apt(head_apt);
-                          free_mem(head_m, head_p, head_c);
+            case 2: del_apt(head_apt);
                           break;
-            case 3: dump_database(&head_m, &head_p, &head_c);
-                          show_agd(head_apt);
-                          free_mem(head_m, head_p, head_c);
+            case 3: show_agd(head_apt);
                           break;
-            case 4: free_apt(head_apt);
+            case 4: sv_apt(head_apt);
+                          free_apt(head_apt);
                           return;
                           break;
         }
@@ -115,7 +115,7 @@ void sv_chg(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c, struct marcacao *head_apt)
 {
     sv_apt(head_apt);
-    upt_pac(head_apt);
+    upt_pac(head_apt, &head_c);
 }
 
 /**##################################### [REQUESITOS GERAIS] ###################################**/
@@ -272,7 +272,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
         printf( "Consultas > %d\n", head_p->nconsultas);
         while( n < head_p->nconsultas )
         {
-            printf("\t[Tipo]: %s\n", head_c->tipo);
+            printf("\n\t[Tipo]: %s\n", head_c->tipo);
             printf("\t[Data]: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
                 head_c->data.ano);
             printf("\t[Medico] : %s\n", head_c->medico);
@@ -323,6 +323,7 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
     int n;
     char str[50];
     char *med;
+    char *nome_old = NULL;
 
     system(CLEAR);
     clock_date();
@@ -335,8 +336,10 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
         while( n < head_p->nconsultas )
         {
             if(!strcmp(med, head_c->medico))
-                printf("\nPaciente > %s", head_p->nome);
-
+            {
+                    printf("\nPaciente > %s", head_p->nome);
+                    nome_old = head_p->nome;
+            }
             head_c = head_c->next;
             n++;
         }
@@ -352,7 +355,64 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
 
 /**##################################### 4 [REQUESITOS] ######################################**/
 
+void pac_by_t(struct paciente *head_p, struct consulta *head_c)
+{
+    int  n = 0;
+    struct data de;
+    struct data a;
 
+    system(CLEAR);
+    clock_date();
+    printf("\n\n\n[PACIENTE] Periodo pretendido  > \n");
+    printf("\t De (d/m/a) :");
+    scanf("%d/%d/%d", &(de.dia), &(de.mes), &(de.ano));
+    printf("\t A (d/m/a) :");
+    scanf("%d/%d/%d", &(a.dia), &(a.mes), &(a.ano));
+
+    while(head_p != NULL)
+    {   
+        while( n < head_p->nconsultas )
+        {
+            if(compare_dates(de, head_c->data) ==  -1 && 
+                compare_dates(a, head_c->data) == 1)
+            {
+                printf( "\nPaciente > %s\n", head_p->nome);
+                printf("\t[Data]: %d/%d/%d\n", head_c->data.dia, head_c->data.mes, 
+                    head_c->data.ano);
+                printf("\t[Medico] : %s\n", head_c->medico);
+            }
+            head_c = head_c->next;
+            n++;
+        }
+        n=0;
+        head_p = head_p->next;
+    }
+    printf("\n\nPrima ENTER para voltar ao menu");
+    getchar();
+    getchar();
+}
+int compare_dates (struct data d1, struct data d2)
+{
+     if (d1.ano < d2.ano)
+    return -1;
+
+    else if (d1.ano > d2.ano)
+       return 1;
+
+    if (d1.ano == d2.ano)
+    {
+         if (d1.mes<d2.mes)
+              return -1;
+         else if (d1.mes>d2.mes)
+              return 1;
+         else if (d1.dia<d2.dia)
+              return -1;
+         else if(d1.dia>d2.dia)
+              return 1;
+         else
+              return 0;
+    }
+}
 
 /**##################################### 5 [REQUESITOS] ######################################**/
 
@@ -414,6 +474,38 @@ int menu_apt()
     return menu_op;
 }
 
+/**##################################### [REQUESITOS GERAIS] ###################################**/
+
+void load_apt(struct marcacao **head_apt)
+{
+    struct marcacao *tmp = NULL;
+    FILE *f = fopen(APT_FILE, "rb");
+
+    if(!f)
+    {
+        printf("Erro a abrir o ficheiro\n");
+        return;
+    }
+
+    while( fread(tmp->nome, sizeof(tmp->nome ), 1, f)  == 1)
+    {
+        printf("HERE\n");
+        fread(&(tmp->idade), sizeof(tmp->idade), 1, f) ;
+        fread(tmp->tipo, sizeof(tmp->tipo), 1, f);
+        fread(tmp->medico, sizeof(tmp->medico), 1, f);
+
+        if ( !(*head_apt = malloc(sizeof (**head_apt))))
+        {
+            printf("Failed to allocate new list node: ");
+            return;
+        }
+        tmp->next = NULL;
+        **head_apt = *tmp;
+        head_apt = &(*head_apt)->next;
+    }
+    fclose(f);
+}
+
 /**--------------------------------------  OPÇÃO 1 -----------------------------------------**/
 
 void make_apt(struct medico *head_m, struct marcacao **head_apt)
@@ -423,12 +515,11 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     struct marcacao tmp;
     char especialidade[50];
     char choice;
+    char t_choice;
+    struct horas apt_duration;
 
-    while( *head_apt != NULL)
-    {
-        //printf("I'm deleting the previous info\n");
+    while( *head_apt )
         head_apt = &(*head_apt)->next;  
-    }
 
     system(CLEAR);
     clock_date();
@@ -437,6 +528,18 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     scanf(" %[^\n]", tmp.nome);
     printf("Idade do Paciente > ");
     scanf("%d", &tmp.idade);
+    
+    if(tmp.idade < 25)
+    {
+        apt_duration.h = 0;
+        apt_duration.m = 30;
+    }
+    else
+    {
+        apt_duration.h = 1;
+        apt_duration.m = 30;
+    } 
+        
     tmp.data.dia = tm.tm_mday;
     tmp.data.mes = tm.tm_mon + 1;
     tmp.data.ano = tm.tm_year + 1900;
@@ -452,14 +555,20 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     else
         tmp.medico = assign_med_by_spec(especialidade, head_m);
     
-    tmp.next = NULL;
+    /*printf("Pretende escoher a  hora ? (s/n)");
+    scanf(" %c", &t_choice);
     
+    if( t_choice == 115)
+        tmp.hora = time_choice();
+    else
+        tmp.hora = assign_time_by_apt();
+    */
+    tmp.next = NULL;
     if ( !(*head_apt = malloc( sizeof (**head_apt) ) ) )
     {
         printf("Failed to allocate new list node: ");
         return;
     }
-
     **head_apt = tmp;
 
     printf("\n\n[MARCAÇÃO] - Prima ENTER para confirmar consulta");
@@ -488,7 +597,7 @@ void del_apt(struct marcacao *head_apt)
         getchar();
         return;
     }
-    
+
     else
         while(aux)
         {
@@ -590,14 +699,48 @@ char * med_choice(struct medico *head_m, char * especialidade)
     }
      return 0;
 }
-/**##################################### 7 [REQUESITOS] ######################################**/
 
-void sv_apt(struct marcacao *head_apt)
+/*struct hora time_choice()
 {
 
 }
 
-void upt_pac(struct marcacao *head_apt)
+struct hora assign_time_by_apt()
+{
+
+}
+*/
+
+/**##################################### 7 [REQUESITOS] ######################################**/
+
+void sv_apt(struct marcacao *head_apt)
+{
+    FILE *f = fopen(APT_FILE, "ab");
+
+    if( !f )
+    {
+        printf("Erro a abrir o ficheiro\n" );
+        return;
+    }
+
+    while(head_apt)
+    {
+        printf("%s\n", head_apt->nome);
+        fwrite(head_apt->nome, sizeof(head_apt->nome), 1, f);
+        
+        fwrite(&(head_apt->idade), sizeof(head_apt->idade), 1, f);
+        printf("%d\n", head_apt->idade);
+        fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, f);
+        printf("%s\n", head_apt->tipo);
+        fwrite(head_apt->medico, sizeof(head_apt->medico), 1, f);
+        printf("%s\n", head_apt->medico);
+        head_apt = head_apt->next;
+    }
+
+    fclose(f);
+}
+
+void upt_pac(struct marcacao *head_apt, struct consulta **head_c)
 {
 
 }
