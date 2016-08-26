@@ -114,7 +114,6 @@ void make_appointment(struct medico *head_m, struct paciente *head_p ,
 void sv_chg(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c, struct marcacao *head_apt)
 {
-    sv_apt(head_apt);
     upt_pac(head_apt, &head_c);
 }
 
@@ -154,7 +153,7 @@ void dump_med(struct medico **head_m)
     {
         if (!(*head_m = malloc(sizeof (**head_m))))
         {
-            printf("Failed to allocate new list node: ");
+            printf("Erro a alocar o novo nó ");
             return;
         }
         tmp.next = NULL;
@@ -180,7 +179,6 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
               fscanf(f, " %d", &tmp.idade) == 1 &&
               fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
     {
-        printf("!!!!NOME > %s\n", tmp.nome);
         while(fscanf(f, "%s - %d/%d/%d - %[^\n]", tmp_c.tipo, 
                     &tmp_c.data.dia, &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
         {
@@ -391,6 +389,7 @@ void pac_by_t(struct paciente *head_p, struct consulta *head_c)
     getchar();
     getchar();
 }
+
 int compare_dates (struct data d1, struct data d2)
 {
      if (d1.ano < d2.ano)
@@ -516,7 +515,6 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     char especialidade[50];
     char choice;
     char t_choice;
-    struct horas apt_duration;
 
     while( *head_apt )
         head_apt = &(*head_apt)->next;  
@@ -531,18 +529,19 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
     
     if(tmp.idade < 25)
     {
-        apt_duration.h = 0;
-        apt_duration.m = 30;
+        tmp.dur.h = 0;
+        tmp.dur.m = 30;
     }
     else
     {
-        apt_duration.h = 1;
-        apt_duration.m = 30;
+        tmp.dur.h = 1;
+        tmp.dur.m = 30;
     } 
         
     tmp.data.dia = tm.tm_mday;
     tmp.data.mes = tm.tm_mon + 1;
     tmp.data.ano = tm.tm_year + 1900;
+
     printf("Tipo de Consulta [Normal/Urgente] > ");
     scanf(" %[^\n]", tmp.tipo);
     printf("Especialidade > ");
@@ -554,19 +553,19 @@ void make_apt(struct medico *head_m, struct marcacao **head_apt)
         tmp.medico = med_choice(head_m, especialidade);
     else
         tmp.medico = assign_med_by_spec(especialidade, head_m);
-    
-    /*printf("Pretende escoher a  hora ? (s/n)");
+
+    printf("Pretende escoher a  hora ? (s/n)");
     scanf(" %c", &t_choice);
     
     if( t_choice == 115)
-        tmp.hora = time_choice();
+        time_choice(&tmp ,*head_apt, tmp.medico);
     else
-        tmp.hora = assign_time_by_apt();
-    */
+        assign_time_by_apt(&tmp, *head_apt, tmp.medico);
+    
     tmp.next = NULL;
     if ( !(*head_apt = malloc( sizeof (**head_apt) ) ) )
     {
-        printf("Failed to allocate new list node: ");
+        printf("Erro a alocar novo no ");
         return;
     }
     **head_apt = tmp;
@@ -699,17 +698,39 @@ char * med_choice(struct medico *head_m, char * especialidade)
     }
      return 0;
 }
-
-/*struct hora time_choice()
+void time_choice(struct marcacao * current, struct marcacao *head_apt, char * med)
 {
+    if(head_apt)
+    {
+         printf( "Medico %s ,pode recebe-la depois das seguintes consultas: ", med);
+    }
+}
+void assign_time_by_apt(struct marcacao *current, struct marcacao *head_apt, char * med)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
 
+    if(head_apt)
+    {
+        while(head_apt)
+        {
+            if(!(strcmp(head_apt->medico, med)))
+            {
+                current->horas.h = head_apt->horas.h + head_apt->dur.h;
+                current->horas.m = head_apt->horas.m + head_apt->dur.m;
+            }
+            head_apt = head_apt->next; 
+         }
+          printf("\n\n\nHora da consulta > %dh:%dm", current->horas.h, current->horas.h);
+    }  
+    else
+    {
+        current->horas.h =  tm.tm_hour;
+        current->horas.m = tm.tm_min;
+        printf("\n\n\nHora da consulta > %dh:%dm", current->horas.h, current->horas.h);
+     }
 }
 
-struct hora assign_time_by_apt()
-{
-
-}
-*/
 
 /**##################################### 7 [REQUESITOS] ######################################**/
 

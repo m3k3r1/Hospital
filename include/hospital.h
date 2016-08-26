@@ -61,10 +61,12 @@ struct marcacao
     int idade;
     struct data data;
     struct horas horas;
+    struct horas dur;
     char tipo[50];
     char * medico;
     struct marcacao *next;
 };
+
 
 int menu();
 void clock_date();
@@ -103,8 +105,8 @@ void free_mem(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
 void free_apt(struct marcacao *head_apt);
 char * med_choice(struct medico *head_m, char * especialidade);
-struct hora time_choice();
-struct hora assign_time_by_apt();
+void time_choice(struct marcacao * current, struct marcacao *head_apt, char * med);
+void assign_time_by_apt(struct marcacao * current, struct marcacao *head_apt, char * med);
 void load_apt(struct marcacao **head_apt);
 void pac_by_t(struct paciente *head_p, struct consulta *head_c);
 int compare_dates (struct data d1, struct data d2);
