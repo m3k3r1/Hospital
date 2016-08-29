@@ -13,6 +13,7 @@
 #define M_FILE "medico.txt"
 #define P_FILE "paciente.txt"
 #define APT_FILE "marcacao.bin"
+#define TEST_FILE "marcacao.txt"
 #define TRUE 1
 #define FALSE 0
 
@@ -94,7 +95,7 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
     struct medico *head_m);
 int menu_apt();
 void make_apt(struct medico *head_m, struct marcacao **head_apt);
-void del_apt(struct marcacao * head_apt);
+void del_apt(struct marcacao **head_apt);
 void show_agd(struct marcacao *head_apt);
 void check_schdl(struct medico *head_m);
 void sv_chg(struct medico *head_m, struct paciente *head_p ,
@@ -105,8 +106,8 @@ void free_mem(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
 void free_apt(struct marcacao *head_apt);
 char * med_choice(struct medico *head_m, char * especialidade);
-void time_choice(struct marcacao * current, struct marcacao *head_apt, char * med);
-void assign_time_by_apt(struct marcacao * current, struct marcacao *head_apt, char * med);
+void time_choice(struct marcacao * current, struct marcacao *old, char * med);
+void assign_time_by_apt(struct marcacao * current, struct marcacao *old, char * med);
 void load_apt(struct marcacao **head_apt);
 void pac_by_t(struct paciente *head_p, struct consulta *head_c);
 int compare_dates (struct data d1, struct data d2);

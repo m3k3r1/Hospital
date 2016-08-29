@@ -1,0 +1,16 @@
+João Silva
+Neurologia 9.30--17.00
+Maria Carvalho
+Neurologia 9.30--17.00
+Sandra Almeida
+Dermatologia 14.00--17.45
+Pedro Almeida
+Dermatologia 14.00--17.45
+Manuel Silva
+Cardiologia 9.30--17.00
+João Santos
+Hematologia 10.00--19.00
+Ana Almeida
+Ginecologia 14.00--17.45
+Miguel Dias
+Cirurgia 20.00--4.00
