@@ -281,42 +281,31 @@ void show_agd(struct marcacao *head_apt)
 
 void del_apt(struct marcacao **head_apt)
 {
-    char nome[50];
-    struct marcacao  * curr_apt, * next_apt ,*prev_apt, *aux;
+    struct marcacao  * curr_apt;
 
     system(CLEAR);
     clock_date();
 
-    aux = * head_apt;
     curr_apt = * head_apt;
     head_apt = NULL;
 
-    if(aux)
+    if(curr_apt)
     {
-        while(aux)
+        if (!curr_apt->next)
         {
-            printf("\n\t Nome > %s\n", aux->nome);
-            aux = aux->next;
+            printf("\n\n\n\tMarcações Apagada\n");
+            printf("\n\nPrima ENTER para voltar ao menu");
+            getchar();
+            getchar();
+            free(curr_apt);
+            free(head_apt);
+            return;
         }
-        printf("\nQual marcação pretende apagar ? ");
-        scanf("%s", nome);
-
-        while(curr_apt)
+        else
         {
-            if ( !strcmp(nome, curr_apt->nome) )
-            {
-                next_apt = curr_apt->next;
-                free(curr_apt);
-                prev_apt->next = next_apt;
-            }
-            prev_apt = curr_apt;
-            curr_apt = curr_apt->next;
         }
-        printf("\n\n\n\t\n");
-        printf("\n\n[MARCAÇÃO APAGADA] - Prima ENTER para confirmar");
-        getchar();
-        getchar();
     }
+
     else
     {
         printf("\n\n\n\tNão foram efetuadas marcações\n");
@@ -325,6 +314,11 @@ void del_apt(struct marcacao **head_apt)
         getchar();
         return;
     }
+}
+
+void wipe_apt(struct marcacao **head_apt, char*nome)
+{
+
 }
 
 void free_apt(struct marcacao **head_apt)
