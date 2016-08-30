@@ -34,7 +34,7 @@ void make_appointment(struct medico *head_m,  struct marcacao *head_apt)
       menu_op  = menu_apt();
       switch(menu_op)
       {
-        case 1: make_apt(&head_apt);
+        case 1: make_apt(&head_apt, head_m);
                       break;
         case 2: del_apt(&head_apt);
                       break;
@@ -51,7 +51,7 @@ void load_apt(struct marcacao **head_apt)
 {
     struct marcacao *tmp;
     tmp = malloc(sizeof(struct marcacao));
-    FILE *f = fopen(APT_FILE, "ab");
+    FILE *f = fopen(APT_FILE, "rb");
     if( !f )
     {
         printf("Erro a abrir o ficheiro\n" );
@@ -59,17 +59,22 @@ void load_apt(struct marcacao **head_apt)
     }
     while(*head_apt)
         head_apt = &(*head_apt)->next;
-
-    while ( fread(tmp->nome, sizeof(tmp->nome), 1, f) == 1 ) {
-        fread(&tmp->idade, sizeof(tmp->idade), 1, f);
-        tmp->next = NULL;
-        *head_apt = tmp;
+        printf("!!!!!!!!!!!!!!%zu\n", fwrite(&tmp->inicio.h,sizeof(tmp->inicio.h), 1 ,f) );
+        while ( fwrite(&tmp->inicio.h,sizeof(tmp->inicio.h), 1 ,f) == 1 )
+        {
+            fwrite(&tmp->inicio.h,sizeof(tmp->inicio.m), 1 ,f);
+            fwrite(&tmp->fim.h,sizeof(tmp->fim.h), 1 ,f);
+            fwrite(&tmp->fim.m,sizeof(tmp->fim.m), 1 ,f);
+            fread(tmp->nome, sizeof(tmp->nome), 1, f);
+            fread(&tmp->idade, sizeof(tmp->idade), 1, f);
+            tmp->next = NULL;
+            *head_apt = tmp;
     }
     free(tmp);
     fclose(f);
 }
 
-void make_apt(struct marcacao **head_apt)
+void make_apt(struct marcacao **head_apt,struct medico *head_m)
 {
      if(head_apt == NULL)
      {
@@ -83,16 +88,19 @@ void make_apt(struct marcacao **head_apt)
     {
         while(*head_apt)
             head_apt = &(*head_apt)->next;
-        *head_apt = create_apt();
+        *head_apt = create_apt(head_m);
         printf("\n\n[MARCAÇÃO EFETUADA] - Prima ENTER para confirmar");
         getchar();
         getchar();
     }
 }
 
-struct marcacao * create_apt()
+struct marcacao * create_apt(struct medico *head_m)
 {
     struct marcacao * tmp;
+    char *tipo = "Normal";
+    char t_choice;
+
     if ( !(tmp = malloc( sizeof(struct marcacao))) )
     {
         printf("Erro a alocar novo no\n" );
@@ -107,10 +115,137 @@ struct marcacao * create_apt()
     scanf(" %[^\n]", tmp->nome);
     printf("Idade do Paciente > ");
     scanf("%d", &tmp->idade);
+
+    do {
+        printf("Especialidade > ");
+        scanf(" %[^\n]", tmp->especialidade);
+        check_spec(head_m, tmp->especialidade);
+
+        if(check_spec(head_m, tmp->especialidade))
+            printf("Introduza uma especialidade valida\n");
+    } while(check_spec(head_m, tmp->especialidade));
+
+    med_choice(&tmp,head_m, tmp->especialidade);
+    printf("Tipo > " );
+    scanf(" %[^\n]", tmp->tipo);
+    if (!strcmp(tmp->tipo, tipo))
+    {
+        printf("Pretende escoher a  hora ? (s/n)");
+        scanf(" %c", &t_choice);
+        if( t_choice == 115)
+            assign_time_by_user(&tmp);
+       else
+            apt_dur(&tmp);
+    }
+    else
+        apt_dur(&tmp);
     tmp->next = NULL;
 
     sv_apt(tmp);
     return tmp;
+}
+
+int check_spec(struct medico *head_m, char (*especialidade))
+{
+    if (head_m)
+    {
+        while (head_m) {
+            if (!strcmp(head_m->especialidade, especialidade))
+                return 0;
+            head_m = head_m->next;
+        }
+    }
+    return 1;
+}
+
+void apt_dur( struct marcacao **head_apt)
+{
+    struct marcacao *tmp;
+    tmp = *head_apt;
+    char *tipo = "Urgente";
+    struct horas dur;
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    if(tmp->idade < 25)
+    {
+        dur.h = 0;
+        dur.m = 30;
+    }
+    else
+    {
+        dur.h = 1;
+        dur.m = 30;
+    }
+
+    if (!strcmp(tmp->tipo, tipo))
+    {
+        tmp->inicio.h = tm.tm_hour;
+        tmp->inicio.m = tm.tm_min;
+    }
+    else
+    {
+        tmp->inicio.h = tm.tm_hour + 1;
+        tmp->inicio.m = tm.tm_min + 30;
+        if(tmp->inicio.m > 60)
+        {
+            tmp->inicio.h++;
+            tmp->inicio.m = tmp->inicio.m - 60;
+        }
+    }
+
+    tmp->fim.h =  tmp->inicio.h + dur.h;
+    tmp->fim.m =  tmp->inicio.m + dur.m;
+
+    if(tmp->fim.m > 60)
+    {
+        tmp->fim.h ++;
+        tmp->fim.m = tmp->fim.m - 60;
+    }
+    *head_apt = tmp;
+    printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
+        tmp->fim.h, tmp->fim.m);
+}
+
+char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*especialidade) )
+{
+    int n = 1 ;
+    int med_op;
+    int x = 1;
+    struct medico *current = head_m;
+    struct marcacao * tmp = *head_apt;
+
+    printf("Pode escolher os seguintes medicos \n");
+    while(current)
+    {
+        if(!strcmp(current->especialidade, especialidade))
+            printf("\n %d -> [Médico] - %s", n++, current->nome);
+        current = current->next;
+    }
+
+    printf("\n\nQual deseja escolher ? ");
+    scanf("%d", &med_op );
+
+    while(head_m)
+    {
+        if(!strcmp(head_m->especialidade, especialidade))
+        {
+            if(med_op == x )
+            {
+                    printf( "\nMédico > %s\n", head_m->nome);
+                    strcpy(tmp->medico ,head_m->nome);
+                    *head_apt = tmp;
+            }
+        x++;
+        }
+        head_m = head_m->next;
+    }
+     return 0;
+}
+
+void assign_time_by_user( struct marcacao **head_apt)
+{
+
 }
 
 void show_agd(struct marcacao *head_apt)
@@ -122,8 +257,13 @@ void show_agd(struct marcacao *head_apt)
     {
         while(head_apt)
         {
+            printf("\n[%dh:%dm - %dh:%dm]\n ", head_apt->inicio.h, head_apt->inicio.m,
+             head_apt->fim.h, head_apt->fim.m);
             printf("\n\tNome > %s\n", head_apt->nome);
             printf("\tIdade > %d\n",head_apt->idade);
+            printf("\tEspecialidade > %s\n",head_apt->especialidade );
+            printf("\tMédico > %s\n", head_apt->medico );
+            printf("\tTipo > %s\n", head_apt->tipo);
             head_apt = head_apt->next;
         }
         printf("\n\nPrima ENTER para voltar ao menu");
@@ -209,7 +349,14 @@ void sv_apt(struct marcacao *head_apt)
         printf("Erro a abrir o ficheiro\n" );
         return;
     }
+    fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,f);
+    fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,f);
+    fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,f);
+    fwrite(&head_apt->fim.m,sizeof(head_apt->fim.m), 1 ,f);
     fwrite(head_apt->nome, sizeof(head_apt->nome), 1, f);
     fwrite(&head_apt->idade, sizeof(head_apt->idade), 1, f);
+    fwrite(head_apt->especialidade, sizeof(head_apt->especialidade),1, f);
+    fwrite(head_apt->medico, sizeof(head_apt->medico), 1, f);
+    fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, f);
     fclose(f);
 }
