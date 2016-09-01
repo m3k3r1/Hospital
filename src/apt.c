@@ -245,6 +245,13 @@ char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*espe
 
 void assign_time_by_user( struct marcacao **head_apt)
 {
+    struct marcacao *tmp = *head_apt;
+    int choice;
+
+    printf("Qual período de tempo prefere ? \n");
+    printf("\t 1 - Manhã\n" );
+    printf("\t2 - Tarde \n" );
+
 
 }
 
@@ -281,31 +288,44 @@ void show_agd(struct marcacao *head_apt)
 
 void del_apt(struct marcacao **head_apt)
 {
-    struct marcacao  * curr_apt;
+    struct marcacao *tmp = NULL;
+    int choice = 1;
 
     system(CLEAR);
     clock_date();
 
-    curr_apt = * head_apt;
-    head_apt = NULL;
+    tmp = *head_apt;
 
-    if(curr_apt)
+    //Se existir consutltas
+    if(tmp)
     {
-        if (!curr_apt->next)
+        //Se só houver uma consulta
+        if (!tmp->next)
         {
-            printf("\n\n\n\tMarcações Apagada\n");
-            printf("\n\nPrima ENTER para voltar ao menu");
+            free_apt(head_apt);
+            printf("\n\n\n\t[Marcação Apagada] - Prima ENTER para voltar ao menu\n");
             getchar();
             getchar();
-            free(curr_apt);
-            free(head_apt);
             return;
         }
+        //Se houver mais de uma
         else
         {
+            while (tmp)
+            {
+                printf("\t %d - [%s] \n", choice++, tmp->nome);
+                tmp = tmp->next;
+            }
+            printf("\nQual marcação pretende apagar ?\n");
+            scanf("%d", &choice);
+            *head_apt = wipe_apt(*head_apt, choice);
+
+            printf("\n\n\n\t[Marcação Apagada] - Prima ENTER para voltar ao menu\n");
+            getchar();
+            getchar();
         }
     }
-
+    // Senão existirem consultas
     else
     {
         printf("\n\n\n\tNão foram efetuadas marcações\n");
@@ -316,9 +336,25 @@ void del_apt(struct marcacao **head_apt)
     }
 }
 
-void wipe_apt(struct marcacao **head_apt, char*nome)
+struct marcacao * wipe_apt(struct marcacao *head_apt, int choice)
 {
+    int i;
+    struct marcacao *aux = head_apt;
+    struct marcacao *del;
 
+    if (choice == 1)
+    {
+        free(aux);
+        return head_apt->next;
+    }
+
+    for(i = 0; i < choice - 2; i++)
+            aux = aux->next;
+    ///aux é o del -1
+    del = aux->next;
+    aux->next = del->next;
+    free(del);
+    return aux;
 }
 
 void free_apt(struct marcacao **head_apt)
@@ -343,6 +379,7 @@ void sv_apt(struct marcacao *head_apt)
         printf("Erro a abrir o ficheiro\n" );
         return;
     }
+
     fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,f);
     fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,f);
     fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,f);

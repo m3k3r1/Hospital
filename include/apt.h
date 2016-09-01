@@ -30,7 +30,7 @@ void apt_dur( struct marcacao **head_apt);
 char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*especialidade));
 void assign_time_by_user( struct marcacao **head_apt);
 void del_apt(struct marcacao **head_apt);
-void wipe_apt(struct marcacao **head_apt, char*nome);
+struct marcacao * wipe_apt(struct marcacao *head_apt, int choice);
 void show_agd(struct marcacao *head_apt);
 void free_apt(struct marcacao **head_apt);
 void sv_apt(struct marcacao *head_apt);
