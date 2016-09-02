@@ -24,7 +24,8 @@ struct marcacao
 int menu_apt();
 void make_appointment(struct medico *head_m,  struct marcacao *head_apt);
 void make_apt( struct marcacao **head_apt, struct medico *head_m);
-struct marcacao  * create_apt(struct medico *head_m);
+struct marcacao  * create_apt(struct medico *head_m, struct marcacao *aux);
+int check_name(struct marcacao * head_apt, char (*nome));
 int check_spec(struct medico *head_m, char (*especialidade));
 void apt_dur( struct marcacao **head_apt);
 char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*especialidade));
@@ -35,4 +36,5 @@ void show_agd(struct marcacao *head_apt);
 void free_apt(struct marcacao **head_apt);
 void sv_apt(struct marcacao *head_apt);
 void load_apt(struct marcacao **head_apt);
+
 #endif

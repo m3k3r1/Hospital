@@ -41,35 +41,45 @@ void dump_pac(struct paciente **head_p ,struct consulta **head_c)
 {
     struct paciente tmp;
     struct consulta tmp_c;
+    int i;
 
     FILE *f = fopen(P_FILE, "r");
-        if(f == NULL)
+    if(f == NULL)
     {
         printf("Erro a abrir o ficheiro\n");
         return;
     }
 
-    while(fscanf(f,"%[^\n]", tmp.nome) == 1 &&
-              fscanf(f, " %d", &tmp.idade) == 1 &&
-              fscanf(f, "%d consultas", &tmp.nconsultas) == 1)
+    while(fscanf(f,"%[^\n]", tmp.nome) == 1 )
     {
-        while(fscanf(f, "%s - %d/%d/%d - %[^\n]\n", tmp_c.tipo, &tmp_c.data.dia,
-              &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico ) == 5)
+        fscanf(f, " %d", &tmp.idade);
+        fscanf(f, "%d consultas", &tmp.nconsultas);
+
+        if(tmp.nconsultas > 0)
         {
-             if ( !(*head_c = malloc(sizeof (**head_c))) )
+            for(i = 0; i < tmp.nconsultas; i++)
             {
-                printf("Erro a alocar o novo nó \n");
-                return;
+                fscanf(f, "%s - %d/%d/%d - %[^\n]\n", tmp_c.tipo, &tmp_c.data.dia,
+                      &tmp_c.data.mes, &tmp_c.data.ano, tmp_c.medico );
+
+                 if ( !(*head_c = malloc(sizeof (**head_c))) )
+                {
+                    printf("Erro a alocar o novo nó \n");
+                    return;
+                }
+
+                tmp_c.next = NULL;
+                **head_c = tmp_c;
+                head_c = &(*head_c)->next;
             }
-            tmp_c.next = NULL;
-            **head_c = tmp_c;
-            head_c = &(*head_c)->next;
         }
+
         if ( !(*head_p = malloc(sizeof (**head_p))) )
         {
             printf("Erro a alocar o novo nó \n");
             return;
         }
+
         tmp.next = NULL;
         **head_p = tmp;
         head_p = &(*head_p)->next;
@@ -144,6 +154,7 @@ void show_info(struct medico *head_m, struct paciente *head_p ,
     printf("\n\nPrima ENTER para voltar ao menu");
     getchar();
 }
+
 void med_by_spec(struct medico *head_m)
 {
     char str[50];
@@ -215,7 +226,7 @@ void pac_by_spec(struct paciente *head_p ,struct consulta *head_c,
             if(!strcmp(med, head_c->medico))
             {
                     printf("\nPaciente > %s", head_p->nome);
-                    //nome_old = head_p->nome;
+                    break;
             }
             head_c = head_c->next;
             n++;

@@ -76,6 +76,7 @@ void load_apt(struct marcacao **head_apt)
 
 void make_apt(struct marcacao **head_apt,struct medico *head_m)
 {
+    struct marcacao *aux = *head_apt;
      if(head_apt == NULL)
      {
          if ( !(*head_apt = malloc( sizeof(struct marcacao))) )
@@ -88,14 +89,14 @@ void make_apt(struct marcacao **head_apt,struct medico *head_m)
     {
         while(*head_apt)
             head_apt = &(*head_apt)->next;
-        *head_apt = create_apt(head_m);
-        printf("\n\n[MARCAÇÃO EFETUADA] - Prima ENTER para confirmar");
+        *head_apt = create_apt(head_m, aux);
+        printf("\n\n[MARCAÇÃO] - Prima ENTER para voltar ao menu");
         getchar();
         getchar();
     }
 }
 
-struct marcacao * create_apt(struct medico *head_m)
+struct marcacao * create_apt(struct medico *head_m, struct marcacao *aux)
 {
     struct marcacao * tmp;
     char *tipo = "Normal";
@@ -113,6 +114,13 @@ struct marcacao * create_apt(struct medico *head_m)
     printf("\n\t\t::Marcações::\n\n");
     printf("Nome do Paciente > ");
     scanf(" %[^\n]", tmp->nome);
+    if (check_name(aux, tmp->nome))
+    {
+        printf("O paciente já marcou uma consulta para hoje \n" );
+        free(tmp);
+        return NULL;
+    }
+
     printf("Idade do Paciente > ");
     scanf("%d", &tmp->idade);
 
@@ -143,6 +151,19 @@ struct marcacao * create_apt(struct medico *head_m)
 
     sv_apt(tmp);
     return tmp;
+}
+
+int check_name(struct marcacao * head_apt, char (*nome))
+{
+    if (head_apt)
+    {
+        while (head_apt) {
+            if (!strcmp(head_apt->nome, nome))
+                return 1;
+            head_apt = head_apt->next;
+        }
+    }
+    return 0;
 }
 
 int check_spec(struct medico *head_m, char (*especialidade))
@@ -245,14 +266,23 @@ char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*espe
 
 void assign_time_by_user( struct marcacao **head_apt)
 {
-    struct marcacao *tmp = *head_apt;
+    //struct marcacao *tmp = *head_apt;
     int choice;
 
     printf("Qual período de tempo prefere ? \n");
     printf("\t 1 - Manhã\n" );
     printf("\t2 - Tarde \n" );
 
+    scanf("%d", &choice);
 
+    if (choice == 1)
+    {
+
+    }
+    else
+    {
+
+    }
 }
 
 void show_agd(struct marcacao *head_apt)

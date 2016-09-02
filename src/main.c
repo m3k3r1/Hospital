@@ -19,15 +19,15 @@ int main()
                 switch(menu_op)
 	               {
     	                case 1:  show_info(head_m, head_p, head_c);
-                                     break;
+                                      break;
                         case 2: med_by_spec(head_m);
                                       break;
                         case 3: pac_by_spec(head_p, head_c, head_m);
                                       break;
-                        case 4:  pac_by_t(head_p, head_c);
+                        case 4: pac_by_t(head_p, head_c);
                                       break;
                         case 5:  check_schdl(head_m);
-                                      break;
+                                        break;
                         case 6: make_appointment(head_m, head_apt);
                                       break;
                         case 7: free_mem(head_m, head_p, head_c);

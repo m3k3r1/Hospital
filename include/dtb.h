@@ -68,4 +68,5 @@ void pac_by_t(struct paciente *head_p, struct consulta *head_c);
 void check_schdl(struct medico *head_m);
 void free_mem(struct medico *head_m, struct paciente *head_p ,
     struct consulta *head_c);
+
 #endif
