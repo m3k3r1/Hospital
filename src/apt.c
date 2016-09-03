@@ -40,7 +40,8 @@ void make_appointment(struct medico *head_m,  struct marcacao *head_apt)
                       break;
         case 3: show_agd(head_apt);
                       break;
-        case 4: free_apt(&head_apt);
+        case 4: sv_apt(head_apt);
+                      free_apt(&head_apt);
                       return;
                       break;
         }
@@ -49,17 +50,35 @@ void make_appointment(struct medico *head_m,  struct marcacao *head_apt)
 
 void load_apt(struct marcacao **head_apt)
 {
-    struct marcacao *tmp;
-    tmp = malloc(sizeof(struct marcacao));
-    FILE *f = fopen(APT_FILE, "rb");
+    struct marcacao tmp;
+
+    FILE *f = fopen(APT_TXT, "r");
+
     if( !f )
     {
         printf("Erro a abrir o ficheiro\n" );
         return;
     }
-    while(*head_apt)
-        head_apt = &(*head_apt)->next;
-        printf("!!!!!!!!!!!!!!%zu\n", fwrite(&tmp->inicio.h,sizeof(tmp->inicio.h), 1 ,f) );
+
+    while ( fscanf(f, "%d %d %d %d\n", &(tmp.inicio.h), &(tmp.inicio.m), &(tmp.fim.h),
+                    &(tmp.fim.m) ) == 4)
+        {
+            fscanf(f, "%[^\n]", tmp.nome);
+            fscanf(f, "%d\n", &tmp.idade);
+            fscanf(f, "%s\n", tmp.especialidade);
+            fscanf(f, "%[^\n]", tmp.medico);
+            fscanf(f, "%s\n", tmp.tipo);
+
+            if (!(*head_apt = malloc(sizeof (**head_apt))))
+            {
+                printf("Erro a alocar o novo nó ");
+                return;
+            }
+            tmp.next = NULL;
+            **head_apt = tmp;
+            head_apt = &(*head_apt)->next;
+    }
+    /*
         while ( fwrite(&tmp->inicio.h,sizeof(tmp->inicio.h), 1 ,f) == 1 )
         {
             fwrite(&tmp->inicio.h,sizeof(tmp->inicio.m), 1 ,f);
@@ -69,8 +88,8 @@ void load_apt(struct marcacao **head_apt)
             fread(&tmp->idade, sizeof(tmp->idade), 1, f);
             tmp->next = NULL;
             *head_apt = tmp;
-    }
-    free(tmp);
+        }
+    */
     fclose(f);
 }
 
@@ -99,6 +118,7 @@ void make_apt(struct marcacao **head_apt,struct medico *head_m)
 struct marcacao * create_apt(struct medico *head_m, struct marcacao *aux)
 {
     struct marcacao * tmp;
+    struct horas dur;
     char *tipo = "Normal";
     char t_choice;
 
@@ -124,7 +144,8 @@ struct marcacao * create_apt(struct medico *head_m, struct marcacao *aux)
     printf("Idade do Paciente > ");
     scanf("%d", &tmp->idade);
 
-    do {
+    do
+    {
         printf("Especialidade > ");
         scanf(" %[^\n]", tmp->especialidade);
         check_spec(head_m, tmp->especialidade);
@@ -136,20 +157,32 @@ struct marcacao * create_apt(struct medico *head_m, struct marcacao *aux)
     med_choice(&tmp,head_m, tmp->especialidade);
     printf("Tipo > " );
     scanf(" %[^\n]", tmp->tipo);
-    if (!strcmp(tmp->tipo, tipo))
-    {
-        printf("Pretende escoher a  hora ? (s/n)");
-        scanf(" %c", &t_choice);
-        if( t_choice == 115)
-            assign_time_by_user(&tmp);
-       else
-            apt_dur(&tmp);
-    }
-    else
-        apt_dur(&tmp);
-    tmp->next = NULL;
+    dur = apt_dur(&tmp);
 
-    sv_apt(tmp);
+    //Se a consulta dor do tipo Normal
+    if (!strcmp(tmp->tipo, tipo))
+   {
+       printf("Pretende escoher a  hora ? (s/n)");
+       scanf(" %c", &t_choice);
+
+       if( t_choice == 110)
+       {
+           if( assign_time(&tmp, aux, head_m, dur) )
+               return 0;
+       }
+       else
+       {
+           if ( choose_time(&tmp, aux, head_m, dur) )
+                return 0;
+       }
+   }
+   else
+   {
+       if( assign_time(&tmp, aux, head_m, dur) )
+           return 0;
+   }
+
+    tmp->next = NULL;
     return tmp;
 }
 
@@ -179,14 +212,10 @@ int check_spec(struct medico *head_m, char (*especialidade))
     return 1;
 }
 
-void apt_dur( struct marcacao **head_apt)
+struct horas apt_dur( struct marcacao **head_apt)
 {
-    struct marcacao *tmp;
-    tmp = *head_apt;
-    char *tipo = "Urgente";
+    struct marcacao *tmp = *head_apt;
     struct horas dur;
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
 
     if(tmp->idade < 25)
     {
@@ -198,37 +227,219 @@ void apt_dur( struct marcacao **head_apt)
         dur.h = 1;
         dur.m = 30;
     }
-
-    if (!strcmp(tmp->tipo, tipo))
-    {
-        tmp->inicio.h = tm.tm_hour;
-        tmp->inicio.m = tm.tm_min;
-    }
-    else
-    {
-        tmp->inicio.h = tm.tm_hour + 1;
-        tmp->inicio.m = tm.tm_min + 30;
-        if(tmp->inicio.m > 60)
-        {
-            tmp->inicio.h++;
-            tmp->inicio.m = tmp->inicio.m - 60;
-        }
-    }
-
-    tmp->fim.h =  tmp->inicio.h + dur.h;
-    tmp->fim.m =  tmp->inicio.m + dur.m;
-
-    if(tmp->fim.m > 60)
-    {
-        tmp->fim.h ++;
-        tmp->fim.m = tmp->fim.m - 60;
-    }
-    *head_apt = tmp;
-    printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
-        tmp->fim.h, tmp->fim.m);
+    return dur;
 }
 
-char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*especialidade) )
+int choose_time(struct marcacao **head_apt, struct marcacao *old_head,
+    struct medico * head_m, struct horas dur)
+    {
+        struct marcacao *tmp = *head_apt;
+        int choice;
+        //Poe o head_m a apontar para o medico da consulta
+        while(head_m)
+        {
+            if(!strcmp(tmp->medico, head_m->nome))
+                break;
+            head_m = head_m->next;
+        }
+        printf("1 - Manhã \n" );
+        printf("2 - Tarde\n" );
+        printf("Qual o período que prefere ? " );
+        scanf("%d", &choice );
+        if (choice == 1)
+
+        {
+            tmp->inicio.h = 9;
+            tmp->inicio.m = 30;
+
+            if ( tmp->inicio.h  >= head_m->entrada.h &&  tmp->inicio.h  < head_m->saida.h)
+            {
+                                while (old_head)
+                                {
+                                    //Se houver outra consulta neste horario
+                                    if ( tmp->inicio.h <= old_head->fim.h)
+                                    {
+                                        tmp->inicio.h = old_head->fim.h;
+                                        tmp->inicio.m = old_head->fim.m + 5;
+
+                                        if(tmp->inicio.m >= 60)
+                                        {
+                                            tmp->inicio.h++;
+                                            tmp->inicio.m = tmp->inicio.m - 60;
+                                        }
+                                    }
+                                    old_head = old_head->next;
+                                }
+                                tmp->fim.h =  tmp->inicio.h + dur.h;
+                                tmp->fim.m =  tmp->inicio.m + dur.m;
+                                if(tmp->fim.m >= 60)
+                                {
+                                    tmp->fim.h ++;
+                                    tmp->fim.m = tmp->fim.m - 60;
+                                }
+                                *head_apt = tmp;
+
+                                printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
+                                    tmp->fim.h, tmp->fim.m);
+                                return 0;
+            }
+            else
+            {
+                printf("O médico já não se encontra disponivel. Tente noutra alturass \n" );
+                printf("Prima ENTER para voltar ao menu\n" );
+                getchar();
+                getchar();
+            }
+        }
+        else
+        {
+            tmp->inicio.h = 14;
+            tmp->inicio.m = 0;
+            if ( tmp->inicio.h  >= head_m->entrada.h &&  tmp->inicio.h  < head_m->saida.h)
+            {
+                                while (old_head)
+                                {
+                                    //Se houver outra consulta neste horario
+                                    if ( tmp->inicio.h <= old_head->fim.h)
+                                    {
+                                        tmp->inicio.h = old_head->fim.h;
+                                        tmp->inicio.m = old_head->fim.m + 5;
+
+                                        if(tmp->inicio.m >= 60)
+                                        {
+                                            tmp->inicio.h++;
+                                            tmp->inicio.m = tmp->inicio.m - 60;
+                                        }
+                                    }
+                                    old_head = old_head->next;
+                                }
+                                tmp->fim.h =  tmp->inicio.h + dur.h;
+                                tmp->fim.m =  tmp->inicio.m + dur.m;
+                                if(tmp->fim.m >= 60)
+                                {
+                                    tmp->fim.h ++;
+                                    tmp->fim.m = tmp->fim.m - 60;
+                                }
+                                *head_apt = tmp;
+
+                                printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
+                                    tmp->fim.h, tmp->fim.m);
+                                return 0;
+            }
+            else
+            {
+                printf("O médico já não se encontra disponivel. Tente noutra alturass \n" );
+                printf("Prima ENTER para voltar ao menu\n" );
+                getchar();
+                getchar();
+            }
+        }
+        return 1;
+    }
+
+int assign_time(struct marcacao **head_apt, struct marcacao *old_head,
+    struct medico * head_m, struct horas dur)
+    {
+        time_t t = time(NULL);
+        struct marcacao *tmp = *head_apt;
+        struct tm tm = *localtime(&t);
+        char *tipo = "Urgente";
+
+        //Poe o head_m a apontar para o medico da consulta
+        while(head_m)
+        {
+            if(!strcmp(tmp->medico, head_m->nome))
+                break;
+            head_m = head_m->next;
+        }
+        //Se a consulta for urgente
+        if (!strcmp(tmp->tipo, tipo))
+        {
+            if ( tm.tm_hour >= head_m->entrada.h &&  tm.tm_hour < head_m->saida.h)
+            {
+                tmp->inicio.h = tm.tm_hour;
+                tmp->inicio.m = tm.tm_min;
+
+                while (old_head)
+                {
+                    //Se houver outra consulta neste horario
+                    if ( tmp->inicio.h <= old_head->fim.h)
+                    {
+                        tmp->inicio.h = old_head->fim.h;
+                        tmp->inicio.m = old_head->fim.m + 5;
+
+                        if(tmp->inicio.m >= 60)
+                        {
+                            tmp->inicio.h++;
+                            tmp->inicio.m = tmp->inicio.m - 60;
+                        }
+                    }
+                    old_head = old_head->next;
+                }
+                tmp->fim.h =  tmp->inicio.h + dur.h;
+                tmp->fim.m =  tmp->inicio.m + dur.m;
+                if(tmp->fim.m >= 60)
+                {
+                    tmp->fim.h ++;
+                    tmp->fim.m = tmp->fim.m - 60;
+                }
+                *head_apt = tmp;
+
+                printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
+                    tmp->fim.h, tmp->fim.m);
+                return 0;
+            }
+            else
+            {
+                printf("O médico já não se encontra disponivel. Tente noutra alturass \n" );
+                printf("Prima ENTER para voltar ao menu\n" );
+                getchar();
+                getchar();
+            }
+        }
+        else
+        {
+            tmp->inicio.h = tm.tm_hour + 1;
+            tmp->inicio.m = tm.tm_min + 30;
+
+            if(tmp->inicio.m >= 60)
+            {
+                tmp->inicio.h++;
+                tmp->inicio.m = tmp->inicio.m - 60;
+            }
+            while (old_head)
+            {
+                //Se houver outra consulta neste horario
+                if ( tmp->inicio.h <= old_head->fim.h)
+                {
+                    tmp->inicio.h = old_head->fim.h;
+                    tmp->inicio.m = old_head->fim.m + 5;
+
+                    if(tmp->inicio.m >= 60)
+                    {
+                        tmp->inicio.h++;
+                        tmp->inicio.m = tmp->inicio.m - 60;
+                    }
+                }
+                old_head = old_head->next;
+            }
+            tmp->fim.h =  tmp->inicio.h + dur.h;
+            tmp->fim.m =  tmp->inicio.m + dur.m;
+            if(tmp->fim.m >= 60)
+            {
+                tmp->fim.h ++;
+                tmp->fim.m = tmp->fim.m - 60;
+            }
+            *head_apt = tmp;
+            printf("%dh:%dm - %dh:%dm\n", tmp->inicio.h, tmp->inicio.m,
+                tmp->fim.h, tmp->fim.m);
+            return 0;
+        }
+        return 1;
+    }
+
+char * med_choice(struct marcacao **head_apt, struct medico *head_m,
+    char (*especialidade) )
 {
     int n = 1 ;
     int med_op;
@@ -262,27 +473,6 @@ char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*espe
         head_m = head_m->next;
     }
      return 0;
-}
-
-void assign_time_by_user( struct marcacao **head_apt)
-{
-    //struct marcacao *tmp = *head_apt;
-    int choice;
-
-    printf("Qual período de tempo prefere ? \n");
-    printf("\t 1 - Manhã\n" );
-    printf("\t2 - Tarde \n" );
-
-    scanf("%d", &choice);
-
-    if (choice == 1)
-    {
-
-    }
-    else
-    {
-
-    }
 }
 
 void show_agd(struct marcacao *head_apt)
@@ -403,21 +593,92 @@ void free_apt(struct marcacao **head_apt)
 
 void sv_apt(struct marcacao *head_apt)
 {
-    FILE *f = fopen(APT_FILE, "ab");
+    //FILE *f = fopen(APT_FILE, "ab");
+    FILE *f = fopen(APT_TXT, "w");
     if( !f )
     {
         printf("Erro a abrir o ficheiro\n" );
         return;
     }
+    while (head_apt) {
+        fprintf(f, "%d %d %d %d\n", head_apt->inicio.h, head_apt->inicio.m, head_apt->fim.h,
+            head_apt->fim.m);
+        fprintf(f, "%s\n", head_apt->nome);
+        fprintf(f, "%d\n", head_apt->idade);
+        fprintf(f, "%s\n", head_apt->especialidade);
+        fprintf(f, "%s\n", head_apt->medico);
+        fprintf(f, "%s\n", head_apt->tipo);
 
-    fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,f);
-    fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,f);
-    fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,f);
-    fwrite(&head_apt->fim.m,sizeof(head_apt->fim.m), 1 ,f);
-    fwrite(head_apt->nome, sizeof(head_apt->nome), 1, f);
-    fwrite(&head_apt->idade, sizeof(head_apt->idade), 1, f);
-    fwrite(head_apt->especialidade, sizeof(head_apt->especialidade),1, f);
-    fwrite(head_apt->medico, sizeof(head_apt->medico), 1, f);
-    fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, f);
+        head_apt = head_apt->next;
+    }
+    /*
+        fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,f);
+        fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,f);
+        fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,f);
+        fwrite(&head_apt->fim.m,sizeof(head_apt->fim.m), 1 ,f);
+        fwrite(head_apt->nome, sizeof(head_apt->nome), 1, f);
+        fwrite(&head_apt->idade, sizeof(head_apt->idade), 1, f);
+        fwrite(head_apt->especialidade, sizeof(head_apt->especialidade),1, f);
+        fwrite(head_apt->medico, sizeof(head_apt->medico), 1, f);
+        fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, f);
+    */
     fclose(f);
+}
+
+void daily_save(struct marcacao **head_apt, struct paciente * head_p,
+    struct consulta * head_c)
+{
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    char choice;
+    int i;
+    struct marcacao *tmp;
+    FILE *f_tmp = fopen( TEMP, "w");
+
+
+    system(CLEAR);
+    load_apt(head_apt);
+    tmp = *head_apt;
+    clock_date();
+
+    printf("\n\n\tDeseja sair e fazer e guardar todas as consultas de hoje ? (s/n) ");
+    scanf(" %c", &choice);
+
+    if(choice == 110)
+    {
+        fclose(f_tmp);
+        free_apt(head_apt);
+        return;
+    }
+    else
+    {
+        while (tmp)
+        {
+            fprintf(f_tmp, "%s\n", tmp->nome);
+            fprintf(f_tmp, "%d\n", tmp->idade);
+            fprintf(f_tmp, "1 consultas\n");
+            fprintf(f_tmp, "%s - %d/%d/%d - %s\n", tmp->tipo, tm.tm_mday,
+                tm.tm_mon + 1,tm.tm_year + 1900 , tmp->medico);
+            tmp = tmp->next;
+        }
+
+        while (head_p)
+        {
+            fprintf(f_tmp, "%s\n", head_p->nome);
+            fprintf(f_tmp, "%d\n", head_p->idade);
+            fprintf(f_tmp, "%d consultas\n" ,head_p->nconsultas);
+            for(i = 0; i < head_p->nconsultas; i++)
+            {
+                fprintf(f_tmp, "%s - %d/%d/%d - %s\n", head_c->tipo, tm.tm_mday,
+                    tm.tm_mon + 1,tm.tm_year + 1900 , head_c->medico);
+                head_c = head_c->next;
+            }
+            head_p = head_p->next;
+        }
+    }
+    remove(P_FILE);
+    remove(APT_TXT);
+    rename(TEMP, P_FILE);
+    fclose(f_tmp);
+    free_apt(head_apt);
 }

@@ -8,6 +8,8 @@
 #define appt_h_
 
 #define APT_FILE "res/marcacao.bin"
+#define APT_TXT "res/marcacao.txt"
+#define TEMP "res/tmp.txt"
 
 struct marcacao
 {
@@ -27,14 +29,20 @@ void make_apt( struct marcacao **head_apt, struct medico *head_m);
 struct marcacao  * create_apt(struct medico *head_m, struct marcacao *aux);
 int check_name(struct marcacao * head_apt, char (*nome));
 int check_spec(struct medico *head_m, char (*especialidade));
-void apt_dur( struct marcacao **head_apt);
-char * med_choice(struct marcacao **head_apt, struct medico *head_m, char (*especialidade));
-void assign_time_by_user( struct marcacao **head_apt);
+struct horas apt_dur( struct marcacao **head_apt);
+int choose_time(struct marcacao **head_apt, struct marcacao *old_head,
+    struct medico * head_m, struct horas dur);
+int assign_time(struct marcacao **head_apt, struct marcacao *old_head,
+    struct medico * head_m, struct horas dur);
+char * med_choice(struct marcacao **head_apt, struct medico *head_m,
+    char (*especialidade));
 void del_apt(struct marcacao **head_apt);
 struct marcacao * wipe_apt(struct marcacao *head_apt, int choice);
 void show_agd(struct marcacao *head_apt);
 void free_apt(struct marcacao **head_apt);
 void sv_apt(struct marcacao *head_apt);
 void load_apt(struct marcacao **head_apt);
+void daily_save( struct marcacao **head_apt, struct paciente * head_p,
+    struct consulta * head_c);
 
 #endif

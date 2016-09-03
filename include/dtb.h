@@ -15,6 +15,7 @@
 #define M_FILE "res/medico.txt"
 #define P_FILE "res/paciente.txt"
 
+
 struct horas
 {
     int h;
