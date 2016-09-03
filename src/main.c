@@ -30,8 +30,8 @@ int main()
                                         break;
                         case 6: make_appointment(head_m, head_apt);
                                       break;
-                        case 7: free_mem(head_m, head_p, head_c);
-                                      daily_save(&head_apt, head_p, head_c);
+                        case 7: daily_save(&head_apt, head_p, head_c);
+                                      free_mem(head_m, head_p, head_c);
                                       return 0;
                                       break;
 	                }
