@@ -593,14 +593,15 @@ void free_apt(struct marcacao **head_apt)
 
 void sv_apt(struct marcacao *head_apt)
 {
-    //FILE *f = fopen(APT_FILE, "ab");
+    FILE * x= fopen(APT_FILE, "wb");
     FILE *f = fopen(APT_TXT, "w");
     if( !f )
     {
         printf("Erro a abrir o ficheiro\n" );
         return;
     }
-    while (head_apt) {
+    while (head_apt)
+    {
         fprintf(f, "%d %d %d %d\n", head_apt->inicio.h, head_apt->inicio.m, head_apt->fim.h,
             head_apt->fim.m);
         fprintf(f, "%s\n", head_apt->nome);
@@ -609,19 +610,20 @@ void sv_apt(struct marcacao *head_apt)
         fprintf(f, "%s\n", head_apt->medico);
         fprintf(f, "%s\n", head_apt->tipo);
 
+
+
+        fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,x);
+        fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,x);
+        fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,x);
+        fwrite(&head_apt->fim.m,sizeof(head_apt->fim.m), 1 ,x);
+        fwrite(head_apt->nome, sizeof(head_apt->nome), 1, x);
+        fwrite(&head_apt->idade, sizeof(head_apt->idade), 1, x);
+        fwrite(head_apt->especialidade, sizeof(head_apt->especialidade),1, x);
+        fwrite(head_apt->medico, sizeof(head_apt->medico), 1, x);
+        fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, x);
         head_apt = head_apt->next;
     }
-    /*
-        fwrite(&head_apt->inicio.h,sizeof(head_apt->inicio.h), 1 ,f);
-        fwrite(&head_apt->inicio.m,sizeof(head_apt->inicio.m), 1 ,f);
-        fwrite(&head_apt->fim.h,sizeof(head_apt->fim.h), 1 ,f);
-        fwrite(&head_apt->fim.m,sizeof(head_apt->fim.m), 1 ,f);
-        fwrite(head_apt->nome, sizeof(head_apt->nome), 1, f);
-        fwrite(&head_apt->idade, sizeof(head_apt->idade), 1, f);
-        fwrite(head_apt->especialidade, sizeof(head_apt->especialidade),1, f);
-        fwrite(head_apt->medico, sizeof(head_apt->medico), 1, f);
-        fwrite(head_apt->tipo, sizeof(head_apt->tipo), 1, f);
-    */
+    fclose(x);
     fclose(f);
 }
 
@@ -635,7 +637,11 @@ void daily_save(struct marcacao **head_apt, struct paciente * head_p,
     struct marcacao *tmp;
     FILE *f_tmp = fopen( TEMP, "w");
 
-
+    if( !f_tmp)
+    {
+        printf("Erro a abrir o ficheiro\n" );
+        return;
+    }
     system(CLEAR);
     load_apt(head_apt);
     tmp = *head_apt;
@@ -669,8 +675,8 @@ void daily_save(struct marcacao **head_apt, struct paciente * head_p,
             fprintf(f_tmp, "%d consultas\n" ,head_p->nconsultas);
             for(i = 0; i < head_p->nconsultas; i++)
             {
-                fprintf(f_tmp, "%s - %d/%d/%d - %s\n", head_c->tipo, tm.tm_mday,
-                    tm.tm_mon + 1,tm.tm_year + 1900 , head_c->medico);
+                fprintf(f_tmp, "%s - %d/%d/%d - %s\n", head_c->tipo, head_c->data.dia,
+                    head_c->data.mes, head_c->data.ano , head_c->medico);
                 head_c = head_c->next;
             }
             head_p = head_p->next;

@@ -27,7 +27,7 @@ int main()
                         case 4: pac_by_t(head_p, head_c);
                                       break;
                         case 5:  check_schdl(head_m);
-                                        break;
+                                       break;
                         case 6: make_appointment(head_m, head_apt);
                                       break;
                         case 7: daily_save(&head_apt, head_p, head_c);

@@ -252,8 +252,17 @@ void pac_by_t(struct paciente *head_p, struct consulta *head_c)
     printf("\n\n\n[PACIENTE] Periodo pretendido  > \n");
     printf("\t De (d/m/a) :");
     scanf("%d/%d/%d", &(de.dia), &(de.mes), &(de.ano));
-    printf("\t A (d/m/a) :");
-    scanf("%d/%d/%d", &(a.dia), &(a.mes), &(a.ano));
+    do
+    {
+        printf("\t A (d/m/a) :");
+        scanf("%d/%d/%d", &(a.dia), &(a.mes), &(a.ano));
+        if( compare_dates(de, a) == 1 )
+        {
+            printf("Tem que inserir uma data posterior a %d/%d/%d\n", (de.dia), (de.mes), 
+                (de.ano) );
+        }
+    } while(compare_dates(de, a) == 1);
+
 
     while(head_p != NULL)
     {
